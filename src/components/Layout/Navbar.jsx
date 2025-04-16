@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import {
   AppBar, Toolbar, Typography, Button, Box, IconButton, Menu, MenuItem, Avatar, Tooltip, Container, Divider,InputBase, alpha
 } from '@mui/material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'; // Icono para menú desplegable
 import MenuIcon from '@mui/icons-material/Menu';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import logoConaljuve from '../../assets/LogoCONALJUVE.png'; // Ajusta la extensión (.png, .jpg, .svg)
@@ -15,13 +16,19 @@ const pages = [ // Elementos principales del menú
   { name: '¿Qué es CONALJUVE?', path: '/sobre-conaljuve' },
   // { name: 'Noticias por Depto.', path: '/noticias' }, // Puedes añadir más
 ];
-
+const committeePages = [
+  { name: 'Comité de Juventud', path: '/comites/juventud' },
+  { name: 'Comité de Profesionales', path: '/comites/profesionales' },
+  { name: 'Comité de Mujeres', path: '/comites/mujeres' },
+  { name: 'Comité de Salud', path: '/comites/salud' },
+  { name: 'Aliados Estratégicos', path: '/comites/aliados' }, // O '/aliados-estrategicos' si prefieres ruta separada
+];
 const Navbar = ({ onLoginClick, onRegisterClick }) => {
   const { isAuthenticated, user, isAdmin, isStaff, logout } = useAuth();
   const navigate = useNavigate();
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
-
+  const [anchorElCommittees, setAnchorElCommittees] = useState(null);
   const handleOpenNavMenu = (event) => setAnchorElNav(event.currentTarget);
   const handleCloseNavMenu = () => setAnchorElNav(null);
   const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
@@ -32,12 +39,22 @@ const Navbar = ({ onLoginClick, onRegisterClick }) => {
     handleCloseUserMenu();
     navigate('/'); // Redirigir a inicio después de logout
   };
-
+ // Handler general para navegar y cerrar TODOS los menús
   const handleNavigate = (path) => {
     handleCloseNavMenu();
     handleCloseUserMenu();
+    handleCloseCommitteesMenu(); // Cerrar menú comités también
     navigate(path);
   };
+  // --- HANDLERS MENÚ COMITÉS ---
+  const handleOpenCommitteesMenu = (event) => {
+    setAnchorElCommittees(event.currentTarget);
+};
+const handleCloseCommitteesMenu = () => {
+    setAnchorElCommittees(null);
+};
+
+// --- FIN HANDLERS ---
   // Determinar las iniciales como fallback
   const getInitials = (name) => {
     if (!name) return '?';
@@ -178,11 +195,23 @@ const userInitials = getInitials(user?.name)
               onClose={handleCloseNavMenu}
               sx={{ display: { xs: 'block', md: 'none' } }}
             >
+               {/* Pages Principales */}
               {pages.map((page) => (
                 <MenuItem key={page.name} onClick={() => handleNavigate(page.path)}>
                   <Typography textAlign="center">{page.name}</Typography>
                 </MenuItem>
               ))}
+              {/* Separador y Comités */}
+              <Divider />
+              <MenuItem onClick={handleOpenCommitteesMenu} sx={{ justifyContent: "space-between" }}>
+                  Comités <KeyboardArrowDownIcon fontSize='small'/>
+              </MenuItem>
+              {committeePages.map((page) => (
+                                <MenuItem key={page.name} onClick={() => handleNavigate(page.path)} sx={{ pl: 4 }}> {/* Indentación */}
+                                    <Typography textAlign="center">{page.name}</Typography>
+                                </MenuItem>
+                            ))}
+              <Divider />
               {/* Añadir Admin en móvil si es admin */}
               {(isAdmin || isStaff) && ( // Mostrar si es Admin O Staff
                              <MenuItem onClick={() => handleNavigate('/admin')}>
@@ -222,6 +251,33 @@ const userInitials = getInitials(user?.name)
                 {page.name}
               </Button>
             ))}
+            {/* Botón Comités con Menú Desplegable */}
+            <Button
+                            onClick={handleOpenCommitteesMenu}
+                            sx={{ my: 2, color: 'white', display: 'block', mx: 1.5, fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.9rem' }}
+                            endIcon={<KeyboardArrowDownIcon />} // Icono flecha abajo
+                            aria-controls={anchorElCommittees ? 'committees-menu' : undefined}
+                            aria-haspopup="true"
+                            aria-expanded={anchorElCommittees ? 'true' : undefined}
+                        >
+                            Comités
+                        </Button>
+                        <Menu
+                            id="committees-menu"
+                            anchorEl={anchorElCommittees}
+                            open={Boolean(anchorElCommittees)}
+                            onClose={handleCloseCommitteesMenu}
+                            MenuListProps={{ 'aria-labelledby': 'committees-button' }}
+                            // Posicionamiento del menú
+                            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                        >
+                            {committeePages.map((page) => (
+                                <MenuItem key={page.name} onClick={() => handleNavigate(page.path)}>
+                                    {page.name}
+                                </MenuItem>
+                            ))}
+                        </Menu>
           </Box>
 
           {/* --- Botones de Autenticación / Menú de Usuario --- */}

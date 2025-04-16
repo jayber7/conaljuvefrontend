@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, Container, Typography, CircularProgress, Alert, Divider, Paper, Chip } from '@mui/material';
+import { Button, Link, Box, Container, Typography, CircularProgress, Alert, Divider, Paper, Chip } from '@mui/material';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf'; // Icono para enlace PDF
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import api from '../services/api';
@@ -105,7 +106,7 @@ const NewsDetailPage = () => {
           <Divider sx={{ mb: 3 }}/>
 
           {/* --- Imagen --- */}
-          <Box
+          {article.imageUrl && <Box
               component="img"
               sx={{
                   width: '100%',
@@ -117,7 +118,38 @@ const NewsDetailPage = () => {
               src={article.imageUrl || placeholderImage}
               alt={article.title}
           />
-
+          }
+          {/* --- CONTENIDO (Texto O PDF) --- */}
+          {article.pdfUrl ? (
+                    // --- Mostrar Enlace/Visor PDF ---
+                    <Box sx={{ my: 4, textAlign: 'center' }}>
+                        <Typography variant="h6" gutterBottom>
+                            El contenido principal de esta noticia está en formato PDF.
+                        </Typography>
+                        <Button
+                            variant="contained"
+                            color="secondary"
+                            startIcon={<PictureAsPdfIcon />}
+                            href={article.pdfUrl} // Enlace directo al PDF en Cloudinary
+                            target="_blank" // Abrir en nueva pestaña
+                            rel="noopener noreferrer"
+                            sx={{ color: 'primary.dark', fontWeight: 'bold'}}
+                        >
+                            Ver / Descargar PDF
+                        </Button>
+                        {/* Opcional: Embeber un visor de PDF (requiere librerías adicionales) */}
+                        {/* <iframe src={article.pdfUrl} width="100%" height="600px" style={{ border: 'none', marginTop: '16px' }}></iframe> */}
+                    </Box>
+                ) : article.content ? (
+                    // --- Mostrar Contenido de Texto ---
+                    <Box className="news-content" sx={{ '& p': { mb: 2 }, lineHeight: 1.7 }}>
+                        <Typography component="div" dangerouslySetInnerHTML={{ __html: article.content }} />
+                    </Box>
+                ) : (
+                    // --- Caso raro: ni content ni PDF ---
+                     <Typography sx={{ fontStyle: 'italic', color: 'text.secondary' }}>[No hay contenido disponible para esta noticia]</Typography>
+                )}
+          {/* --- FIN CONTENIDO --- */}
           {/* --- Contenido --- */}
           {/* Usar dangerouslySetInnerHTML con precaución si viene de un editor WYSIWYG */}
           {/* Si es texto plano, puedes usar Typography o Box */}

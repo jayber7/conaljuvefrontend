@@ -6,7 +6,7 @@ import api from '../../services/api';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField,
   Box, CircularProgress, Alert, Grid, Select, MenuItem, InputLabel, FormControl,
-  Input, Avatar, Typography, Link, FormHelperText // Importar FormHelperText para errores de Select
+  Input, Avatar, Typography, Paper, Link, FormHelperText // Importar FormHelperText para errores de Select
 } from '@mui/material';
 import PhotoCamera from '@mui/icons-material/PhotoCamera'; // Icono para subir foto
 import PersonIcon from '@mui/icons-material/Person';
@@ -19,6 +19,8 @@ import { es } from 'date-fns/locale';
 import CameraAltIcon from '@mui/icons-material/CameraAlt'; // Icono para activar cámara
 import CloseIcon from '@mui/icons-material/Close'; // Icono para cerrar cámara
 import SwitchCameraIcon from '@mui/icons-material/SwitchCamera'; // Icono para cambiar cámara (avanzado)
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable'; // Para tablas en PDF (opcional)
 
 const RegisterModal = ({ open, onClose, onSwitchToLogin }) => {
   const { register: authRegister } = useAuth();
@@ -38,6 +40,7 @@ const [cameraStream, setCameraStream] = useState(null);
 const videoRef = useRef(null); // Ref para el elemento <video>
 const canvasRef = useRef(null); // Ref para el <canvas> oculto
 // --- FIN ESTADOS CÁMARA ---
+const [pdfData, setPdfData] = useState(null); // Estado para guardar datos del PDF
   const { register, handleSubmit, control, watch, setValue, reset, formState: { errors } } = useForm({
       defaultValues: {
           name: '',
@@ -152,12 +155,19 @@ const canvasRef = useRef(null); // Ref para el <canvas> oculto
             // Previsualización (opcional)
             const reader = new FileReader();
             reader.onloadend = () => {
-                setProfilePicPreview(reader.result);
+                console.log("FileReader onloadend:", reader.result ? 'Data URL generado' : 'Sin resultado'); // DEBUG
+                setProfilePicPreview(reader.result); // <-- Actualiza la previsualización
             };
+            reader.onerror = (error) => { // DEBUG
+                console.error("FileReader Error:", error);
+                setError("Error al leer el archivo de imagen.");
+                setProfilePicPreview(null);
+           };
             reader.readAsDataURL(file);
+            
             // Guardar el archivo en el estado del formulario (o manejarlo al submit)
             // register('profilePicture').onChange(event); // O usar setValue
-            setValue('profilePicture', file); // react-hook-form puede manejar File objects
+            setValue('profilePicture', file); // <-- Guarda el archivo en RHF
         } else {
             setProfilePicPreview(null);
             setValue('profilePicture', null);
@@ -292,7 +302,8 @@ const canvasRef = useRef(null); // Ref para el <canvas> oculto
 
   const onSubmit = async (data) => {
     if (data.password !== data.confirmPassword) { /* ... (manejo error contraseña) ... */ return; }
-    setLoading(true); setError(''); setSuccess(false);
+    setLoading(true); setError(''); setSuccess(false); setPdfData(null); // Resetear PDF data
+    
 
     const formData = new FormData();
 
@@ -350,269 +361,219 @@ const canvasRef = useRef(null); // Ref para el <canvas> oculto
                 },
             });
       setSuccess(true);
-      reset();  // Resetear a defaultValues (que ahora incluyen los nuevos campos vacíos/null)
-      // --- AÑADIR CIERRE AUTOMÁTICO ---
-            // Esperar unos segundos antes de cerrar el modal
-            const timer = setTimeout(() => {
-              onClose(); // Llama a la función onClose pasada por props
-              // Opcional: Cambiar al modal de login después de cerrar
-              // onSwitchToLogin();
-          }, 2500); // 2500 milisegundos = 2.5 segundos (ajusta el tiempo)
-
-          // Limpiar el temporizador si el componente se desmonta antes
-          return () => clearTimeout(timer);
-          // --- FIN AÑADIR CIERRE AUTOMÁTICO ---
+      // --- GUARDAR DATOS PARA PDF (SIN la contraseña ni el archivo) ---
+      const dataForPdf = {
+        name: data.name, username: data.username, email: data.email,
+        birthDate: data.birthDate ? data.birthDate.toLocaleDateString('es-ES') : 'No especificada', // Formatear fecha
+        gender: data.gender === 'male' ? 'Varón' : (data.gender === 'female' ? 'Mujer' : 'No especificado'),
+        idCard: data.idCard || 'No especificado',
+        phoneNumber: data.phoneNumber || 'No especificado',
+        // Obtener nombres de ubicación (necesitas tenerlos en estado o buscarlos)
+        departmentName: departments.find(d => d.code == data.location.departmentCode)?.name || `Código ${data.location.departmentCode || 'N/A'}`,
+        provinceName: provinces.find(p => p.code == data.location.provinceCode)?.name || `Código ${data.location.provinceCode || 'N/A'}`,
+        municipalityName: municipalities.find(m => m.code == data.location.municipalityCode)?.name || `Código ${data.location.municipalityCode || 'N/A'}`,
+        zone: data.location.zone || 'No especificada',
+        registrationDate: new Date().toLocaleString('es-ES') // Fecha/hora del registro
+    };
+   setPdfData(dataForPdf);
+   // --- FIN GUARDAR DATOS ---
+   reset();
+   setProfilePicPreview(null);
+   // Quitar cierre automático para permitir descarga de PDF
+   // const timer = setTimeout(() => { onClose(); }, 2500);
+   // return () => clearTimeout(timer);-
     } catch (err) { setError(err.message || 'Error desconocido al registrarse.'); }
     finally { setLoading(false); }
   };
+// --- Función para Generar PDF ---
+const generatePdf = () => {
+    if (!pdfData) return;
 
+    const doc = new jsPDF();
+    const margin = 15;
+    const lineHeight = 7;
+    let currentY = margin;
+
+    // Título
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text('Comprobante de Registro - CONALJUVE', margin, currentY);
+    currentY += lineHeight * 2;
+
+    // Información del Usuario
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.text('Datos del Miembro:', margin, currentY);
+    currentY += lineHeight;
+    doc.setFont(undefined, 'normal');
+
+    const addLine = (label, value) => {
+        doc.setFont(undefined, 'bold');
+        doc.text(`${label}:`, margin, currentY);
+        doc.setFont(undefined, 'normal');
+        // Ajusta el x de inicio del valor para alinear
+        doc.text(String(value || 'No especificado'), margin + 45, currentY);
+        currentY += lineHeight;
+        if (currentY > 270) { // Salto de página si se acerca al final
+             doc.addPage();
+             currentY = margin;
+         }
+    };
+
+    addLine('Nombre Completo', pdfData.name);
+    addLine('Nombre de Usuario', pdfData.username);
+    addLine('Correo Electrónico', pdfData.email);
+    addLine('Fecha de Nacimiento', pdfData.birthDate);
+    addLine('Género', pdfData.gender);
+    addLine('Carnet de Identidad', pdfData.idCard);
+    addLine('Número de Celular', pdfData.phoneNumber);
+
+    currentY += lineHeight; // Espacio extra
+
+    doc.setFont(undefined, 'bold');
+    doc.text('Ubicación Registrada:', margin, currentY);
+    currentY += lineHeight;
+    doc.setFont(undefined, 'normal');
+
+    addLine('Departamento', pdfData.departmentName);
+    addLine('Provincia', pdfData.provinceName);
+    addLine('Municipio', pdfData.municipalityName);
+    addLine('Zona/Barrio', pdfData.zone);
+
+    currentY += lineHeight;
+
+    doc.setFontSize(10);
+    doc.setTextColor(100); // Gris
+    doc.text(`Fecha de Registro: ${pdfData.registrationDate}`, margin, currentY);
+    currentY += lineHeight;
+    doc.text('Este documento es un comprobante de su registro en el portal CONALJUVE.', margin, currentY);
+
+    // Guardar el PDF
+    doc.save(`registro_conaljuve_${pdfData.username}.pdf`);
+};
+// --- Fin Generar PDF ---
   return (
-  <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Crear Cuenta</DialogTitle>
-      <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
-      {/* <form onSubmit={handleSubmit(onSubmit)}> */}
-        <DialogContent>
-          {/* ... (Alerts y campos name, username, email, password sin cambios) ... */}
-           {/* El Alert de éxito se mostrará cuando success sea true */}
-           {success && <Alert severity="success" sx={{ mb: 2 }}>¡Registro exitoso! Serás redirigido...</Alert>}
-                    {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-          {!success && (
-             <Grid container spacing={2}>
-                {/* ... (Grid items para name, username, email, password) ... */}
-                <Grid item xs={12} sm={6}> <TextField fullWidth label="Nombre Completo" {...register("name", { required: "Nombre requerido" })} error={!!errors.name} helperText={errors.name?.message} disabled={loading || success}/> </Grid>
-                <Grid item xs={12} sm={6}> <TextField fullWidth label="Nombre de Usuario" {...register("username", { required: "Usuario requerido" })} error={!!errors.username} helperText={errors.username?.message} disabled={loading || success}/> </Grid>
-                <Grid item xs={12}> <TextField fullWidth label="Correo Electrónico" type="email" {...register("email", { required: "Correo requerido", pattern: { value: /^\S+@\S+$/i, message: "Correo inválido" } })} error={!!errors.email} helperText={errors.email?.message} disabled={loading || success}/> </Grid>
-                <Grid item xs={12} sm={6}> <TextField fullWidth label="Contraseña" type="password" {...register("password", { required: "Contraseña requerida", minLength: { value: 6, message: "Mínimo 6 caracteres" } })} error={!!errors.password} helperText={errors.password?.message} disabled={loading || success}/> </Grid>
-                <Grid item xs={12} sm={6}> <TextField fullWidth label="Confirmar Contraseña" type="password" {...register("confirmPassword", { required: "Confirma la contraseña" })} error={!!errors.confirmPassword} helperText={errors.confirmPassword?.message} disabled={loading || success}/> </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                                <Controller
-                                    name="birthDate"
-                                    control={control}
-                                    // rules={{ required: 'Fecha de nacimiento requerida' }} // Añade si es obligatorio
-                                    render={({ field }) => (
-                                        <DatePicker
-                                            label="Fecha de Nacimiento"
-                                            value={field.value || null} // DatePicker espera null o Date
-                                            onChange={(newValue) => field.onChange(newValue)}
-                                            disabled={loading}
-                                            slotProps={{ textField: { fullWidth: true, error: !!errors.birthDate, helperText: errors.birthDate?.message } }}
-                                            disableFuture // No permitir fechas futuras
-                                        />
-                                    )}
-                                />
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
-                                {/* Select para Género */}
-                                <FormControl fullWidth error={!!errors.gender} disabled={loading}>
-                                    <InputLabel id="gender-label">Género</InputLabel>
-                                    <Controller
-                                        name="gender"
-                                        control={control}
-                                        // rules={{ required: 'Seleccione un género' }} // Añade si es obligatorio
-                                        render={({ field }) => (
-                                            <Select labelId="gender-label" label="Género" {...field}>
-                                                <MenuItem value=""><em>(Opcional)</em></MenuItem>
-                                                <MenuItem value="male">Varón</MenuItem>
-                                                <MenuItem value="female">Mujer</MenuItem>
-                                                {/* Podrías añadir 'other' si es necesario */}
-                                            </Select>
-                                        )}
+    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
+    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth> {/* Aumentado a lg */}
+        <DialogTitle sx={{ borderBottom: 1, borderColor: 'divider' }}>Crear Cuenta</DialogTitle>
+        <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
+            <DialogContent sx={{ bgcolor: 'grey.50', p: { xs: 2, sm: 3 } }}>
+                {/* Mensaje de Éxito con Botón PDF */}
+                {success && (
+                    <Alert
+                        severity="success"
+                        action={
+                            pdfData && (
+                                <Button color="inherit" size="small" onClick={generatePdf}>
+                                    Descargar PDF
+                                </Button>
+                            )
+                        }
+                        sx={{ mb: 2 }}
+                    >
+                        ¡Registro exitoso! Puedes descargar tu comprobante.
+                        <Button onClick={onClose} size="small" sx={{ml: 2}}>Cerrar</Button> {/* Botón Cerrar */}
+                    </Alert>
+                )}
+                {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+                {/* Ocultar formulario si hubo éxito */}
+                {!success && (
+                    <Grid container spacing={3}> {/* Grid principal */}
+
+                        {/* Columna Izquierda: Datos Personales y Cuenta */}
+                        <Grid item xs={12} md={7}>
+                            <Paper sx={{ p: 2.5, mb: 3 }} variant="outlined">
+                                <Typography variant="h6" gutterBottom>Datos Personales</Typography>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Nombre Completo*" {...register("name", { required: true })} error={!!errors.name} helperText={errors.name?.message} disabled={loading}/> </Grid>
+                                    <Grid item xs={12} sm={6}><Controller name="birthDate" control={control} render={({ field }) => (<DatePicker slotProps={{ textField: { fullWidth: true, size: 'small', error: !!errors.birthDate, helperText: errors.birthDate?.message } }} label="Fecha Nacimiento" {...field} value={field.value || null} disabled={loading} disableFuture/> )}/> </Grid>
+                                    <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Carnet Identidad" {...register("idCard")} error={!!errors.idCard} helperText={errors.idCard?.message} disabled={loading}/> </Grid>
+                                    <Grid item xs={12} sm={6}><FormControl fullWidth size="small" error={!!errors.gender} disabled={loading}><InputLabel>Género</InputLabel><Controller name="gender" control={control} render={({ field }) => (<Select label="Género" {...field}><MenuItem value=""><em>(Opcional)</em></MenuItem><MenuItem value="male">Varón</MenuItem><MenuItem value="female">Mujer</MenuItem></Select>)} /></FormControl> </Grid>
+                                    <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Número Celular" {...register("phoneNumber")} error={!!errors.phoneNumber} helperText={errors.phoneNumber?.message} disabled={loading}/> </Grid>
+                                </Grid>
+                            </Paper>
+
+                            <Paper sx={{ p: 2.5 }} variant="outlined">
+                                <Typography variant="h6" gutterBottom>Datos de Cuenta</Typography>
+                                 <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Nombre Usuario*" {...register("username", { required: true })} error={!!errors.username} helperText={errors.username?.message} disabled={loading}/> </Grid>
+                                    <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Correo Electrónico*" type="email" {...register("email", { required: true, pattern: /^\S+@\S+$/i })} error={!!errors.email} helperText={errors.email?.message || (errors.email?.type === 'pattern' ? 'Correo inválido' : '')} disabled={loading}/> </Grid>
+                                    <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Contraseña*" type="password" {...register("password", { required: true, minLength: 6 })} error={!!errors.password} helperText={errors.password?.message || (errors.password?.type === 'minLength' ? 'Mínimo 6 caracteres' : '')} disabled={loading}/> </Grid>
+                                    <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Confirmar Contraseña*" type="password" {...register("confirmPassword", { required: true })} error={!!errors.confirmPassword} helperText={errors.confirmPassword?.message} disabled={loading}/> </Grid>
+                                 </Grid>
+                            </Paper>
+                        </Grid>
+
+                        {/* Columna Derecha: Foto y Ubicación */}
+                        <Grid item xs={12} md={5}>
+                             <Paper sx={{ p: 2.5, mb: 3 }} variant="outlined">
+                                <Typography variant="h6" gutterBottom>Foto de Perfil</Typography>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+                                    <Avatar src={profilePicPreview || undefined} sx={{ width: 100, height: 100, mb: 1, bgcolor: 'grey.300' }}>
+                                        {!profilePicPreview && <PersonIcon sx={{ fontSize: 60 }}/>}
+                                    </Avatar>
+                                    {/* <input type="file" accept="image/*" onChange={handleFileChange} id="profile-upload-file" style={{ display: 'none' }} ref={fileInputRef} {...register('profilePicture')}/> */}
+                                    <input
+                                        type="file"
+                                        hidden
+                                        accept="image/*"
+                                        onChange={handleFileChange} // Solo usar onChange
+                                        id="profile-upload-file"
+                                        ref={fileInputRef}
+                                        // {...register('profilePicture')} // <-- QUITAR ESTA LÍNEA
                                     />
-                                     {errors.gender && <FormHelperText>{errors.gender.message}</FormHelperText>}
-                                </FormControl>
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={4}><TextField fullWidth label="Carnet de Identidad" {...register("idCard")} error={!!errors.idCard} helperText={errors.idCard?.message} disabled={loading}/></Grid>
-                    <Grid item xs={12} sm={6}><TextField fullWidth label="Número de Celular" {...register("phoneNumber")} error={!!errors.phoneNumber} helperText={errors.phoneNumber?.message} disabled={loading}/></Grid>
-                     {/* --- CAMPO FOTO ACTUALIZADO --- */}
-                     <Grid item xs={12}> <Typography variant="subtitle2" sx={{mb: 1}}>Foto de Perfil (Opcional)</Typography></Grid>
-                                <Grid item xs={12} md={6}>
-                                    {/* Área para cámara o previsualización */}
-                                    <Box sx={{
-                                        width: '100%',
-                                        aspectRatio: '1 / 1', // Hacerlo cuadrado
-                                        // height: 250, // O altura fija
-                                        bgcolor: 'grey.200',
-                                        borderRadius: 1,
-                                        position: 'relative',
-                                        overflow: 'hidden', // Ocultar partes del video que no caben
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        border: '1px solid',
-                                        borderColor: 'divider'
-                                     }}>
-                                        {isCameraOpen ? (
-                                            <>
-                                                <video
-                                                    ref={videoRef}
-                                                    autoPlay
-                                                    playsInline // Importante para móviles
-                                                    style={{
-                                                        width: '100%',
-                                                        height: '100%',
-                                                        objectFit: 'cover', // Cubrir el área
-                                                        transform: 'scaleX(-1)' // Espejar para modo selfie
-                                                    }}
-                                                    />
-                                                {/* Canvas oculto para captura */}
-                                                <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
-                                            </>
-                                        ) : profilePicPreview ? (
-                                            <img src={profilePicPreview} alt="Previsualización" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                        ) : (
-                                            <PersonIcon sx={{ fontSize: 80, color: 'grey.400' }}/>
-                                        )}
-                                         {cameraError && <Alert severity="error" sx={{position: 'absolute', bottom: 0, left: 0, right: 0, m: 1, zIndex: 1}}>{cameraError}</Alert>}
-                                    </Box>
-                                </Grid>
-                                <Grid item xs={12} md={6}>
-                                    {/* Controles de Foto */}
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, height: '100%', justifyContent: 'center' }}>
-                                         <Button
-                                            variant="outlined"
-                                            component="label"
-                                            startIcon={<PhotoCamera />}
-                                            disabled={loading || isCameraOpen} // Deshabilitar si la cámara está abierta
-                                        >
+                                    <label htmlFor="profile-upload-file">
+                                        <Button variant="outlined" component="span" startIcon={<PhotoCamera />} size="small" disabled={loading || isCameraOpen}>
                                             Subir Archivo
-                                            <input type="file" hidden accept="image/*" onChange={handleFileChange} ref={fileInputRef} />
                                         </Button>
-                                        {!isCameraOpen ? (
-                                            <Button
-                                                variant="outlined"
-                                                startIcon={<CameraAltIcon />}
-                                                onClick={startCamera}
-                                                disabled={loading}
-                                            >
-                                                Usar Cámara
-                                            </Button>
-                                        ) : (
-                                            <>
-                                                <Button
-                                                    variant="contained"
-                                                    color="primary"
-                                                    onClick={takePicture}
-                                                    disabled={loading || !cameraStream} // Deshabilitar si no hay stream
-                                                >
-                                                    Tomar Foto
-                                                </Button>
-                                                 {/* Botón opcional para cambiar cámara (requiere lógica más compleja) */}
-                                                 {/* <IconButton size="small"><SwitchCameraIcon /></IconButton> */}
-                                                <Button
-                                                    variant="outlined"
-                                                    color="error"
-                                                    startIcon={<CloseIcon />}
-                                                    onClick={() => { stopCameraStream(); setIsCameraOpen(false); setCameraError(''); }}
-                                                    disabled={loading}
-                                                    size="small"
-                                                >
-                                                    Cerrar Cámara
-                                                </Button>
-                                            </>
-                                        )}
-                                         {errors.profilePicture && <Typography color="error" variant="caption">{errors.profilePicture.message}</Typography>}
-                                    </Box>
+                                    </label>
+                                    {/* Separador o texto 'o' */}
+                                    <Typography variant="caption">o</Typography>
+                                    {!isCameraOpen ? (
+                                        <Button variant="outlined" startIcon={<CameraAltIcon />} onClick={startCamera} disabled={loading} size="small">Usar Cámara</Button>
+                                    ) : (
+                                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                                             <Box sx={{ width: '100%', maxWidth: 200, aspectRatio: '1/1', bgcolor: 'black', borderRadius: 1, overflow: 'hidden', position: 'relative'}}>
+                                                <video ref={videoRef} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }} />
+                                                <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
+                                            </Box>
+                                            {cameraError && <Alert severity="error" size="small" sx={{width: '100%', mt: 1}}>{cameraError}</Alert>}
+                                            <Button variant="contained" onClick={takePicture} disabled={loading || !cameraStream} size="small">Tomar Foto</Button>
+                                            <Button variant="outlined" color="error" onClick={() => { stopCameraStream(); setIsCameraOpen(false); setCameraError(''); }} disabled={loading} size="small" startIcon={<CloseIcon />}>Cancelar Cámara</Button>
+                                         </Box>
+                                    )}
+                                     {errors.profilePicture && <Typography color="error" variant="caption">{errors.profilePicture.message}</Typography>}
+                                </Box>
+                             </Paper>
+
+                            <Paper sx={{ p: 2.5 }} variant="outlined">
+                                <Typography variant="h6" gutterBottom>Ubicación</Typography>
+                                <Grid container spacing={2}>
+                                     <Grid item xs={12}><Button variant="outlined" size="small" startIcon={<LocationOnIcon />} onClick={handleSuggestLocation} disabled={loadingLocation.suggestion || loading}>Sugerir Ubicación</Button></Grid>
+                                     <Grid item xs={12} sm={6}><FormControl /* ... */ size="small" error={!!errors.location?.departmentCode} disabled={loadingLocation.dep || loading}><InputLabel>Departamento*</InputLabel><Controller name="location.departmentCode" control={control} rules={{ required: true }} render={({ field }) => ( <Select /* ... */ {...field} ><MenuItem value=""><em>Seleccione...</em></MenuItem>{departments.map(d => <MenuItem key={d.code} value={d.code}>{d.name}</MenuItem>)}</Select> )}/></FormControl> </Grid>
+                                     <Grid item xs={12} sm={6}><FormControl /* ... */ size="small" error={!!errors.location?.provinceCode} disabled={!selectedDepartmentCode || loadingLocation.prov || loading}><InputLabel>Provincia</InputLabel><Controller name="location.provinceCode" control={control} render={({ field }) => ( <Select /* ... */ {...field} ><MenuItem value=""><em>(Opcional)</em></MenuItem>{provinces.map(p => <MenuItem key={p.code} value={p.code}>{p.name}</MenuItem>)}</Select> )}/></FormControl> </Grid>
+                                     <Grid item xs={12} sm={6}><FormControl /* ... */ size="small" error={!!errors.location?.municipalityCode} disabled={!selectedProvinceCode || loadingLocation.mun || loading}><InputLabel>Municipio</InputLabel><Controller name="location.municipalityCode" control={control} render={({ field }) => ( <Select /* ... */ {...field} ><MenuItem value=""><em>(Opcional)</em></MenuItem>{municipalities.map(m => <MenuItem key={m.code} value={m.code}>{m.name}</MenuItem>)}</Select> )}/></FormControl> </Grid>
+                                     <Grid item xs={12} sm={6}><TextField fullWidth label="Zona / Barrio" size="small" {...register("location.zone")} disabled={loading} /></Grid>
                                 </Grid>
-                                {/* --- FIN CAMPO FOTO --- */}
-
-            {/* --- Sección Ubicación (Usando Códigos) --- */}
-            <Grid item xs={12}> <Typography variant="subtitle1" sx={{mt: 1}}>Ubicación</Typography></Grid>
-
-            <Grid item xs={12} sm={6} md={4}>
-                 {/* --- MODIFICACIÓN: Usar location.departmentCode --- */}
-                <FormControl fullWidth error={!!errors.location?.departmentCode}>
-                   <InputLabel id="department-label">Departamento*</InputLabel>
-                   <Controller
-                       name="location.departmentCode" // <-- Cambiado
-                       control={control}
-                       rules={{ required: 'Departamento es requerido' }}
-                       render={({ field }) => (
-                           <Select labelId="department-label" label="Departamento*" {...field} disabled={loading || loadingLocation.dep || success}>
-                               <MenuItem value=""><em>Seleccione...</em></MenuItem>
-                               {/* --- MODIFICACIÓN: Usar dep.code como value --- */}
-                               {departments.map((dep) => (
-                                   <MenuItem key={dep.code} value={dep.code}>{dep.name}</MenuItem>
-                               ))}
-                               {/* --- FIN MODIFICACIÓN --- */}
-                           </Select>
-                       )}
-                   />
-                   {/* --- MODIFICACIÓN: Mostrar error de departmentCode --- */}
-                   {errors.location?.departmentCode && <FormHelperText>{errors.location.departmentCode.message}</FormHelperText>}
-                   {/* --- FIN MODIFICACIÓN --- */}
-                </FormControl>
-            </Grid>
-             <Grid item xs={12} sm={6} md={4}>
-                 {/* --- MODIFICACIÓN: Usar location.provinceCode --- */}
-                <FormControl fullWidth error={!!errors.location?.provinceCode} disabled={!selectedDepartmentCode || loadingLocation.prov || loading || success}>
-                   <InputLabel id="province-label">Provincia</InputLabel>
-                    <Controller
-                       name="location.provinceCode" // <-- Cambiado
-                       control={control}
-                       render={({ field }) => (
-                           <Select labelId="province-label" label="Provincia" {...field}>
-                               <MenuItem value=""><em>{loadingLocation.prov ? 'Cargando...' : '(Opcional)'}</em></MenuItem>
-                                {/* --- MODIFICACIÓN: Usar prov.code como value --- */}
-                                {provinces.map((prov) => (
-                                   <MenuItem key={prov.code} value={prov.code}>{prov.name}</MenuItem>
-                               ))}
-                                {/* --- FIN MODIFICACIÓN --- */}
-                           </Select>
-                       )}
-                   />
-                   {/* Mostrar error si añades validación opcional */}
-                   {errors.location?.provinceCode && <FormHelperText>{errors.location.provinceCode.message}</FormHelperText>}
-                </FormControl>
-            </Grid>
-             <Grid item xs={12} sm={6} md={4}>
-                  {/* --- MODIFICACIÓN: Usar location.municipalityCode --- */}
-                 <FormControl fullWidth error={!!errors.location?.municipalityCode} disabled={!selectedProvinceCode || loadingLocation.mun || loading || success}>
-                   <InputLabel id="municipality-label">Municipio</InputLabel>
-                    <Controller
-                       name="location.municipalityCode" // <-- Cambiado
-                       control={control}
-                       render={({ field }) => (
-                           <Select labelId="municipality-label" label="Municipio" {...field}>
-                               <MenuItem value=""><em>{loadingLocation.mun ? 'Cargando...' : '(Opcional)'}</em></MenuItem>
-                               {/* --- MODIFICACIÓN: Usar mun.code como value --- */}
-                               {municipalities.map((mun) => (
-                                   <MenuItem key={mun.code} value={mun.code}>{mun.name}</MenuItem>
-                               ))}
-                               {/* --- FIN MODIFICACIÓN --- */}
-                           </Select>
-                       )}
-                   />
-                    {/* Mostrar error si añades validación opcional */}
-                   {errors.location?.municipalityCode && <FormHelperText>{errors.location.municipalityCode.message}</FormHelperText>}
-                </FormControl>
-             </Grid>
-             <Grid item xs={12} sm={6}>
-                  {/* --- MODIFICACIÓN: Usar location.zone --- */}
-                 <TextField fullWidth label="Zona / Barrio (Opcional)" {...register("location.zone")} error={!!errors.location?.zone} helperText={errors.location?.zone?.message} disabled={loading || success}/>
-                 {/* --- FIN MODIFICACIÓN --- */}
-             </Grid>
-             {/* Botón Sugerir Ubicación (sin cambios funcionales aquí, pero revisa lógica de setValue) */}
-             <Grid item xs={12} sm={6} sx={{ display: 'flex', alignItems: 'center'}}> <Button /*...*/ onClick={handleSuggestLocation} /*...*/ >{/*...*/}</Button> </Grid>
-            {/* --- Fin Sección Ubicación --- */}
-
-          </Grid>
-           )}
-           {/* --- Fin Renderizado Condicional --- */}
-           {/* Link a Login (sin cambios) */}
-           {!success && ( 
-           <Typography variant="body2" sx={{ mt: 2 }} > ¿Ya tienes cuenta? <Link /*...*/ onClick={onSwitchToLogin} /*...*/> Inicia sesión aquí </Link> </Typography>
-           )}
-        </DialogContent>
-        <DialogActions sx={{ p: '16px 24px'}}>
-          {/* Botones Cancelar/Crear Cuenta (sin cambios) */}
-          <Button onClick={onClose} disabled={loading} color="inherit">Cancelar</Button>
-          <Button type="submit" variant="contained" color="primary" disabled={loading || success}>{loading ? <CircularProgress size={24} color="inherit"/> : 'Crear Cuenta'}</Button>
-        </DialogActions>
-      </form>
+                            </Paper>
+                        </Grid>
+                    </Grid>
+                )}
+                {!success && <Typography /* Link Inicia sesión */ />}
+            </DialogContent>
+            <DialogActions sx={{ p: '16px 24px', borderTop: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
+                 {/* Mostrar Cancelar solo si no hubo éxito */}
+                 {!success && <Button onClick={onClose} disabled={loading} color="inherit">Cancelar</Button>}
+                 {/* Mostrar Crear Cuenta solo si no hubo éxito */}
+                 {!success && <Button type="submit" variant="contained" color="primary" disabled={loading}> {loading ? <CircularProgress size={24} color="inherit"/> : 'Crear Cuenta'} </Button>}
+                 {/* Mostrar botón Cerrar si hubo éxito */}
+                 {success && <Button onClick={onClose} color="primary">Cerrar</Button>}
+            </DialogActions>
+        </form>
     </Dialog>
-  </LocalizationProvider> // Cerrar LocalizationProvider
-  );
+</LocalizationProvider>
+);
 };
 
 export default RegisterModal;
