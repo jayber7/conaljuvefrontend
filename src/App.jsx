@@ -21,7 +21,9 @@ function App() {
         <Route
           path="/admin"
           element={
-            <ProtectedRoute role="ADMIN">
+            <ProtectedRoute roles={['ADMIN', 'STAFF']}> {/* Permitir a Admin y Staff */}
+            {/* <ProtectedRoute roles={['ADMIN']}>  */}
+             {/* O si solo admin puede ver toda la página: <ProtectedRoute roles={['ADMIN']}> */}
               <AdminPage/>
               
             </ProtectedRoute>

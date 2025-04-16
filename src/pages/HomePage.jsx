@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Container, Grid, Typography, CircularProgress, Alert, Pagination, Stack, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import NewsCard from '../components/News/NewsCard'; // Crear este componente
 import api from '../services/api';
-
+//import bannerConaljuve from '../assets/BannerCONALJUVE.png';
 const HomePage = () => {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,7 +11,8 @@ const HomePage = () => {
   const [limit] = useState(9); // Noticias por página
   const [totalPages, setTotalPages] = useState(1);
   const [sortBy, setSortBy] = useState('-publicationDate'); // Orden por defecto
-  const [filterDept, setFilterDept] = useState(''); // Filtro por departamento
+  //const [filterDept, setFilterDept] = useState(''); // Filtro por departamento
+  const [filterDeptCode, setFilterDeptCode] = useState(''); // <-- MODIFICADO: Usar código
   const [departments, setDepartments] = useState([]); // Lista de deptos para el filtro
 
 
@@ -24,7 +25,10 @@ const HomePage = () => {
                 page,
                 limit,
                 sort: sortBy,
-                'locationScope[department]': filterDept || undefined, // Solo enviar si hay filtro
+                //'locationScope[department]': filterDept || undefined, // Solo enviar si hay filtro
+                 // --- MODIFICACIÓN: Enviar el código numérico del departamento ---
+                'locationScope.departmentCode': filterDeptCode || undefined,
+                // --- FIN MODIFICACIÓN ---
             };
             const response = await api.get('/news', { params });
             setNews(response.data.data.news || []);
@@ -36,7 +40,7 @@ const HomePage = () => {
         } finally {
             setLoading(false);
         }
-    }, [page, limit, sortBy, filterDept]);
+    }, [page, limit, sortBy, filterDeptCode]);
 
 
   // Fetch inicial y cuando cambian los filtros/página
@@ -67,13 +71,40 @@ const HomePage = () => {
   }
 
   const handleFilterChange = (event) => {
-      setFilterDept(event.target.value);
+          // --- MODIFICADO: Guardar el código numérico ---
+    setFilterDeptCode(event.target.value);
+    // --- FIN MODIFICACIÓN ---
       setPage(1); // Resetear a página 1 al cambiar filtro
   }
 
   return (
     <Container maxWidth="lg">
-      <Typography variant="h1" component="h1" gutterBottom>
+       {/* --- BANNER --- 
+       <Box
+                sx={{
+                    width: '100%',
+                    height: { xs: 150, sm: 200, md: 250 }, // Altura responsiva
+                    mb: 4, // Margen inferior
+                    borderRadius: '8px', // Bordes redondeados
+                    overflow: 'hidden', // Para que la imagen no se salga si usas objectFit
+                    boxShadow: 3, // Sombra ligera
+                }}
+            >
+                <img
+                    src={bannerConaljuve}
+                    alt="Banner CONALJUVE"
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover', // Cubre el contenedor, puede recortar imagen
+                        // objectFit: 'contain', // Muestra toda la imagen, puede dejar espacios
+                        display: 'block' // Evita espacio extra debajo de la imagen
+                    }}
+                />
+            </Box>
+            {/* --- FIN BANNER --- */}
+
+      <Typography variant="h3" component="h3" gutterBottom>
         Últimas Noticias
       </Typography>
 
@@ -97,13 +128,18 @@ const HomePage = () => {
               <InputLabel id="filter-dept-label">Departamento</InputLabel>
               <Select
                   labelId="filter-dept-label"
-                  value={filterDept}
-                  label="Departamento"
+                  // --- MODIFICADO: Usar filterDeptCode como value ---
+                  value={filterDeptCode}
+                  label="Filtrar por Departamento"
                   onChange={handleFilterChange}
+                  // --- FIN MODIFICACIÓN ---
               >
                   <MenuItem value=""><em>Todos</em></MenuItem>
                   {departments.map(dep => (
-                      <MenuItem key={dep.id || dep.name} value={dep.name}>{dep.name}</MenuItem>
+                    // --- MODIFICADO: Usar dep.code como key y value ---
+                      <MenuItem key={dep.code} value={dep.code}>{dep.name}</MenuItem>
+              // --- FIN MODIFICACIÓN ---
+                      
                   ))}
               </Select>
           </FormControl>

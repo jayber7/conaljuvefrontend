@@ -8,7 +8,7 @@ import CommentList from '../components/Comments/CommentList'; // Crear este comp
 import CommentForm from '../components/Comments/CommentForm'; // Crear este componente
 import { useAuth } from '../contexts/AuthContext';
 
-const placeholderImage = 'https://via.placeholder.com/800x400?text=Noticia';
+const placeholderImage = 'https://dummyimage.com/800x400?text=Noticia';
 
 const NewsDetailPage = () => {
   const { id } = useParams();

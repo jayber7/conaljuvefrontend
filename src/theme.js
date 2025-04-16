@@ -4,26 +4,10 @@ import { red, blueGrey, grey } from '@mui/material/colors';
 
 const theme = createTheme({
   palette: {
-    primary: {
-      main: '#004080', // Azul corporativo CONALJUVE (ejemplo)
-      // light: '#336699',
-      // dark: '#002d5a',
-    },
-    secondary: {
-      main: '#ffc107', // Amarillo/Naranja como acento (inspirado bandera Bolivia)
-      // main: '#d32f2f', // Rojo como acento alternativo
-    },
-    error: {
-      main: red.A400,
-    },
-    background: {
-      default: grey[100], // Fondo muy claro, casi blanco
-      paper: '#ffffff', // Fondo de elementos como Cards, Modals
-    },
-    text: {
-        primary: blueGrey[900],
-        secondary: blueGrey[600],
-    }
+    primary: { main: '#004080' },
+    secondary: { main: '#ffc107' },
+    background: { default: grey[100], paper: '#ffffff' },
+    text: { primary: blueGrey[900], secondary: blueGrey[600] }
   },
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
@@ -31,6 +15,12 @@ const theme = createTheme({
     h2: { fontSize: '2.2rem', fontWeight: 500, marginBottom: '0.8rem', color: '#003f7a'},
     h3: { fontSize: '1.8rem', fontWeight: 500, marginBottom: '0.7rem' },
     h4: { fontSize: '1.5rem', fontWeight: 500, marginBottom: '0.6rem' },
+    h6: { // Usado en el Navbar, podemos ajustar aquí o con sx
+      fontWeight: 700, // Más grueso
+      fontFamily: '"Roboto Condensed", sans-serif', // Aplicar fuente específica
+      textTransform: 'uppercase', // Mayúsculas como WWF
+      letterSpacing: '0.05em', // Espaciado ligero
+  },
     // ... otras personalizaciones
   },
   components: {

@@ -11,6 +11,7 @@ const NewsCard = ({ article }) => {
   const formattedDate = article.publicationDate
     ? format(new Date(article.publicationDate), 'dd MMMM, yyyy', { locale: es })
     : 'Fecha desconocida';
+ 
 
   return (
     <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -47,8 +48,11 @@ const NewsCard = ({ article }) => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
               <Typography variant="caption" color="text.secondary">
                   {formattedDate}
+                  
               </Typography>
+              
               {/* Podrías añadir autor o tags aquí si quieres */}
+              
           </Box>
         </CardContent>
       </CardActionArea>

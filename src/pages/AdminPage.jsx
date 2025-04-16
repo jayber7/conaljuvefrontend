@@ -10,8 +10,11 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import api from '../services/api';
 import NewsFormModal from '../components/Admin/NewsFormModal'; // Crear este componente
+import UserManagement from '../components/Admin/UserManagement'; // <-- Importar componente
+import { useAuth } from '../contexts/AuthContext'; // Importar useAuth
 
 const AdminPage = () => {
+  const { isAdmin, isStaff } = useAuth(); // Obtener roles
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -29,7 +32,8 @@ const AdminPage = () => {
     try {
       // Podrías tener un endpoint específico o pedir todos con un límite alto
       // También podrías querer ver noticias no publicadas aquí
-      const response = await api.get('/news?limit=1000&sort=-createdAt'); // Ojo: pedir todo si hay mucho puede ser lento
+      const response = await api.get('/news?limit=50&sort=-createdAt'); // Ojo: pedir todo si hay mucho puede ser lento
+      console.log(response.data.data.news)
       setNews(response.data.data.news || []);
     } catch (err) {
       setError(err.response?.data?.message || 'Error al cargar noticias para administración.');
@@ -82,11 +86,11 @@ const AdminPage = () => {
          // setLoadingDelete(false); // Se resetea al cerrar o en error
     }
   };
-
+ 
 
   // --- Columnas para DataGrid ---
   const columns = [
-    // { field: '_id', headerName: 'ID', width: 220 },
+   // { field: '_id', headerName: 'ID', width: 220 },
     {
         field: 'title',
         headerName: 'Título',
@@ -97,17 +101,21 @@ const AdminPage = () => {
         field: 'publicationDate',
         headerName: 'Fecha Pub.',
         width: 130,
-        type: 'date',
-        valueGetter: (params) => params.value ? new Date(params.value) : null, // Necesario para ordenar/filtrar fechas
-        renderCell: (params) => params.value
-            ? format(params.value, 'dd/MM/yyyy', { locale: es })
-            : 'N/A',
+        type: 'string',
+        valueGetter: (value,row) => {
+          return `${row.publicationDate || ''}`;
+        },
+       
     },
     {
         field: 'author',
         headerName: 'Autor',
         width: 150,
-        valueGetter: (params) => (params?.row?.author?.name) || 'Desconocido',
+        type:'object',
+        valueGetter: (value,row) => {
+          return `${row.author.name || ''}`;
+        },
+        //valueGetter: (params) => (params?.row?.author?.name) || 'Desconocido',
         // valueGetter: (params) => params.row.author?.username || 'Desconocido', // Acceder al nombre poblado
     },
     {
@@ -129,16 +137,24 @@ const AdminPage = () => {
                   <VisibilityIcon fontSize="inherit" />
               </IconButton>
           </Tooltip>
-           <Tooltip title="Editar Noticia">
-              <IconButton size="small" onClick={() => handleOpenModal(params.row)}>
-                  <EditIcon fontSize="inherit" />
-              </IconButton>
-           </Tooltip>
-          <Tooltip title="Eliminar Noticia">
-              <IconButton size="small" color="error" onClick={() => handleOpenDeleteConfirm(params.id)}>
-                 <DeleteIcon fontSize="inherit" />
-              </IconButton>
-          </Tooltip>
+          {/* --- MODIFICACIÓN: Mostrar Editar a Staff/Admin --- */}
+          {(isAdmin || isStaff) && (
+                 <Tooltip title="Editar Noticia">
+                    <IconButton size="small" onClick={() => handleOpenModal(params.row)}>
+                        <EditIcon fontSize="inherit" />
+                    </IconButton>
+                 </Tooltip>
+             )}
+             {/* --- FIN MODIFICACIÓN --- */}
+            {/* --- MODIFICACIÓN: Mostrar Eliminar solo a Admin --- */}
+            {isAdmin && (
+                <Tooltip title="Eliminar Noticia">
+                    <IconButton size="small" color="error" onClick={() => handleOpenDeleteConfirm(params.id)}>
+                       <DeleteIcon fontSize="inherit" />
+                    </IconButton>
+                </Tooltip>
+             )}
+             {/* --- FIN MODIFICACIÓN --- */}
         </Box>
       ),
     },
@@ -151,14 +167,16 @@ const AdminPage = () => {
         <Typography variant="h2" component="h1">
           Gestionar Noticias
         </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddCircleOutlineIcon />}
-          onClick={() => handleOpenModal(null)} // null para crear
-        >
-          Añadir Noticia
-        </Button>
+        {(isAdmin || isStaff) && (
+                  <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<AddCircleOutlineIcon />}
+                      onClick={() => handleOpenModal(null)}
+                  >
+                      Añadir Noticia
+                  </Button>
+               )}
       </Box>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -183,7 +201,7 @@ const AdminPage = () => {
           disableRowSelectionOnClick
         />
       </Paper>
-
+      
        {/* --- Modal Crear/Editar Noticia --- */}
         <NewsFormModal
             open={modalOpen}
@@ -211,7 +229,9 @@ const AdminPage = () => {
             </Button>
           </DialogActions>
         </Dialog>
-
+        {/* --- SECCIÓN GESTIÓN DE USUARIOS --- */}
+        {isAdmin && <UserManagement />}
+        {/* --- FIN SECCIÓN --- */}
     </Container>
   );
 };

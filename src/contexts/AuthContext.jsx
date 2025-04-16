@@ -77,6 +77,7 @@ export const AuthProvider = ({ children }) => {
     user,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'ADMIN',
+    isStaff: user?.role === 'ADMIN' || user?.role === 'STAFF', // Staff también incluye Admin
     loading, // Exportar estado de carga
     login,
     logout,

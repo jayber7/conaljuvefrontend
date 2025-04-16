@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-  AppBar, Toolbar, Typography, Button, Box, IconButton, Menu, MenuItem, Avatar, Tooltip, Container, Divider
+  AppBar, Toolbar, Typography, Button, Box, IconButton, Menu, MenuItem, Avatar, Tooltip, Container, Divider,InputBase, alpha
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-// import logo from '../../assets/logo-conaljuve.png'; // Asegúrate de tener tu logo
+import logoConaljuve from '../../assets/LogoCONALJUVE.png'; // Ajusta la extensión (.png, .jpg, .svg)
+import pattern from '../../assets/pattern.png';
+import SearchIcon from '@mui/icons-material/Search'; // Icono de búsqueda
 
 const pages = [ // Elementos principales del menú
   { name: 'Inicio', path: '/' },
@@ -15,7 +17,7 @@ const pages = [ // Elementos principales del menú
 ];
 
 const Navbar = ({ onLoginClick, onRegisterClick }) => {
-  const { isAuthenticated, user, isAdmin, logout } = useAuth();
+  const { isAuthenticated, user, isAdmin, isStaff, logout } = useAuth();
   const navigate = useNavigate();
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
@@ -35,34 +37,125 @@ const Navbar = ({ onLoginClick, onRegisterClick }) => {
     handleCloseNavMenu();
     handleCloseUserMenu();
     navigate(path);
-  }
-
+  };
+  // Determinar las iniciales como fallback
+  const getInitials = (name) => {
+    if (!name) return '?';
+    const nameParts = name.split(' ');
+    if (nameParts.length > 1) {
+        return `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`.toUpperCase();
+    }
+    return name.charAt(0).toUpperCase();
+}
+const userInitials = getInitials(user?.name)
+ // --- Estilo para los links del menú (simulando WWF) ---
+  const menuLinkStyle = {
+      my: 2,
+      color: 'white',
+      display: 'block',
+      mx: 1.5, // Más espaciado
+      fontWeight: 700, // Grueso
+      fontSize: '0.9rem', // Ligeramente más pequeño
+      textTransform: 'uppercase', // MAYÚSCULAS
+      letterSpacing: '0.05em',
+      textDecoration: 'none',
+      '&:hover': {
+          color: 'secondary.main', // Color de acento al pasar el mouse
+      }
+  };
   return (
-    <AppBar position="sticky" color="inherit" elevation={0} sx={{ bgcolor: 'background.paper'}}>
+     // --- MODIFICACIÓN: Añadir estilos de fondo al AppBar ---
+     <AppBar
+     position="sticky"
+     elevation={3} // Puedes añadir algo de sombra si quieres
+     sx={{
+         backgroundColor: '#222', // Fondo oscuro base
+        // backgroundImage: `url(${bannerConaljuve})`, // Establecer la imagen de fondo
+        // backgroundSize: 'cover',                   // Escalar la imagen para cubrir el área
+        // backgroundPosition: 'center center',       // Centrar la imagen
+        // backgroundRepeat: 'no-repeat',             // Evitar que se repita
+         // Opcional: Añadir un overlay semitransparente para mejorar legibilidad del texto
+        //  '&::before': { // Pseudo-elemento para el overlay
+        //      content: '""',
+        //      position: 'absolute',
+        //      top: 0,
+        //      left: 0,
+        //      right: 0,
+        //      bottom: 0,
+        //      backgroundColor: 'rgba(0, 30, 60, 0.3)', // Azul oscuro semitransparente (ajusta color y opacidad)
+        //      zIndex: 0, // Detrás del contenido
+        //  },
+         // Asegurarse que el contenido esté por encima del overlay
+          backgroundImage: 'url(${pattern})', // Si usas imagen
+          backgroundRepeat: 'repeat',
+          //background: 'linear-gradient(rgba(30,30,30,0.95), rgba(50,50,50,0.98)), url("data:image/svg+xml,%3Csvg width=\'6\' height=\'6\' viewBox=\'0 0 6 6\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23555555\' fill-opacity=\'0.1\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M5 0h1L0 6V5zM6 5v1H5z\'/%3E%3C/g%3E%3C/svg%3E")', // Ejemplo pattern CSS
+          color: '#ffffff', // Cambiar color de texto a blanco para contraste
+          '& .MuiToolbar-root, & .MuiContainer-root': { // Aplicar a Toolbar y Container dentro del AppBar
+              position: 'relative', // Para que el z-index funcione
+              zIndex: 1,
+          },
+          // Cambiar color de botones/iconos si es necesario
+          '& .MuiButton-root': { color: '#ffffff' },
+          '& .MuiIconButton-root': { color: '#ffffff' },
+     }}
+ >
+ {/* --- FIN MODIFICACIÓN --- */}
       <Container maxWidth="lg"> {/* Controla el ancho máximo */}
-        <Toolbar disableGutters> {/* Sin padding por defecto */}
+        <Toolbar disableGutters sx={{ position: 'relative', minHeight: {xs: 56, md: 70} }}> {/* Altura mínima y posición relativa */}
 
           {/* --- Logo --- */}
+          {/* <RouterLink to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', marginRight: '16px' }}> */}
+                        <Box
+                            component={RouterLink}
+                            to="/"
+                            sx={{
+                              position: { xs:'relative', md: 'absolute' }, // Relativo en móvil, absoluto en desktop
+                              left: { xs: 0, md: '-10px' }, // Desplazado a la izquierda en desktop
+                              top: { xs: 0, md: '-15px' }, // Desplazado hacia arriba en desktop
+                              zIndex: 1301, // Encima del AppBar y otros elementos
+                              bgcolor: 'background.paper', // Fondo blanco para el logo
+                              p: { xs: 0.5, md: 1 }, // Padding alrededor del logo
+                              borderRadius: '4px', // Bordes redondeados
+                              boxShadow: '0px 4px 8px rgba(0,0,0,0.2)', // Sombra para destacar
+                              display: 'inline-block', // Para que el padding funcione bien
+                              lineHeight: 0, // Evitar espacio extra
+                              transform: {xs: 'none', md: 'translateY(10px)'} // Ajuste vertical fino si es necesario
+                            }}
+                            // alt="Logo CONALJUVE"
+                            // src={logoConaljuve} // Usar el logo importado
+                        >
+                          <img
+                            
+                            src={logoConaljuve}
+                            alt="Logo CONALJUVE"
+                            style={{
+                                height: '80px', // Tamaño del logo (ajusta)
+                                display: 'block',
+                            }}
+                        />
+                        </Box>
+                        
+
           <Typography
             variant="h6"
             noWrap
             component={RouterLink}
             to="/"
             sx={{
-              mr: 2,
+              ml: 12,
               display: { xs: 'none', md: 'flex' }, // Oculto en móvil, visible en desktop
               fontWeight: 700,
               // letterSpacing: '.1rem',
-              color: 'primary.main', // Usar color primario del tema
+              color: '#ffffff', // Usar color primario del tema
               textDecoration: 'none',
               alignItems: 'center'
             }}
           >
-             {/* <img src={logo} alt="CONALJUVE Logo" style={{ height: '30px', marginRight: '10px' }} /> */}
-             <Box component="span" sx={{mr: 1, fontSize: '1.8rem'}}>🇧🇴</Box> {/* Emoji temporal */}
+             
+             {/* <Box component="span" sx={{mr: 1, fontSize: '1.8rem'}}>🇧🇴</Box> Emoji temporal */}
              CONALJUVE
           </Typography>
-
+          {/* </RouterLink> */}
           {/* --- Menú Móvil --- */}
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
             <IconButton
@@ -91,11 +184,11 @@ const Navbar = ({ onLoginClick, onRegisterClick }) => {
                 </MenuItem>
               ))}
               {/* Añadir Admin en móvil si es admin */}
-               {isAdmin && (
-                 <MenuItem onClick={() => handleNavigate('/admin')}>
-                   <AdminPanelSettingsIcon sx={{ mr: 1 }} /> Admin
-                 </MenuItem>
-               )}
+              {(isAdmin || isStaff) && ( // Mostrar si es Admin O Staff
+                             <MenuItem onClick={() => handleNavigate('/admin')}>
+                                 <AdminPanelSettingsIcon sx={{ mr: 1 }} /> Administración
+                             </MenuItem>
+              )}
             </Menu>
           </Box>
 
@@ -138,9 +231,17 @@ const Navbar = ({ onLoginClick, onRegisterClick }) => {
                 <Tooltip title="Abrir menú">
                   <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                     {/* Usar iniciales o imagen de perfil si la hubiera */}
-                    <Avatar sx={{ bgcolor: 'secondary.main', width: 32, height: 32, fontSize: '0.8rem' }}>
-                      {user?.name ? user.name.charAt(0).toUpperCase() : '?'}
-                      </Avatar>
+                    <Avatar
+                                            alt={user.name || user.username} // Texto alternativo para accesibilidad
+                                            src={user.profilePictureUrl || undefined} // Pasar la URL de la foto aquí
+                                            sx={{
+                                                bgcolor: user.profilePictureUrl ? 'transparent' : 'secondary.main', // Color de fondo solo si NO hay imagen
+                                                width: 32, height: 32, fontSize: '0.8rem'
+                                            }}
+                                        >
+                                            {/* Fallback a Iniciales si no hay foto */}
+                                            {!user.profilePictureUrl && userInitials}
+                    </Avatar>
                   </IconButton>
                 </Tooltip>
                 <Menu
@@ -158,11 +259,11 @@ const Navbar = ({ onLoginClick, onRegisterClick }) => {
                   </MenuItem>
                   <Divider />
                   {/* <MenuItem onClick={() => handleNavigate('/perfil')}>Perfil</MenuItem> */}
-                   {isAdmin && (
-                      <MenuItem onClick={() => handleNavigate('/admin')}>
-                          <AdminPanelSettingsIcon sx={{ mr: 1, fontSize: '1.2rem' }}/> Administración
-                      </MenuItem>
-                   )}
+                  {(isAdmin || isStaff) && (
+                           <MenuItem onClick={() => handleNavigate('/admin')}>
+                               <AdminPanelSettingsIcon sx={{ mr: 1, fontSize: '1.2rem' }}/> Administración
+                           </MenuItem>
+                  )}
                   <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
                 </Menu>
               </>
