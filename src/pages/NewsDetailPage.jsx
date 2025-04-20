@@ -81,7 +81,7 @@ const NewsDetailPage = () => {
     : 'Fecha desconocida';
 
   return (
-    <Container maxWidth="md"> {/* Contenedor más estrecho para lectura */}
+    <Container maxWidth="lg"> {/* Contenedor más estrecho para lectura */}
        <Paper elevation={2} sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 4}}>
           {/* --- Título y Metadatos --- */}
           <Typography variant="h1" component="h1" gutterBottom>
@@ -126,6 +126,16 @@ const NewsDetailPage = () => {
                         <Typography variant="h6" gutterBottom>
                             El contenido principal de esta noticia está en formato PDF.
                         </Typography>
+                        <iframe
+                            src={`${article.pdfUrl}#view=fitH`} // Añadir #view=fitH para ajustar horizontalmente (opcional)
+                            width="100%"
+                            height="700px" // Ajusta la altura según necesidad
+                            style={{ border: '1px solid #ccc' }} // Estilo básico del borde
+                            title={`Visor PDF: ${article.title}`} // Título para accesibilidad
+                            // sandbox // Opcional: añadir sandbox para seguridad si el PDF no es de confianza, pero puede romper funcionalidades
+                        >
+                           <p>Tu navegador no soporta iframes o la visualización de PDF. Puedes descargarlo usando el enlace.</p> {/* Mensaje alternativo */}
+                        </iframe>
                         <Button
                             variant="contained"
                             color="secondary"

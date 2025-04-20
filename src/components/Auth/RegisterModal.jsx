@@ -53,6 +53,7 @@ const [pdfData, setPdfData] = useState(null); // Estado para guardar datos del P
           gender: '', // Usar '' para Select y manejar opción 'Seleccionar'
           //profilePictureUrl: '', // Opcional
           idCard: '',
+          idCardExtension: '',
           phoneNumber: '',        
       }
   });
@@ -306,7 +307,7 @@ const [pdfData, setPdfData] = useState(null); // Estado para guardar datos del P
     
 
     const formData = new FormData();
-
+    
     // // --- MODIFICACIÓN: Asegurar que location tenga códigos numéricos ---
     // const { confirmPassword, ...rest } = data;
     // const userData = {
@@ -339,6 +340,7 @@ const [pdfData, setPdfData] = useState(null); // Estado para guardar datos del P
         const genderValue = data.gender === 'male' ? true : (data.gender === 'female' ? false : undefined);
         if (genderValue !== undefined) formData.append('gender', genderValue); // Enviar true/false como string
         if (data.idCard) formData.append('idCard', data.idCard);
+        if (data.idCardExtension) formData.append('idCardExtension', data.idCardExtension); // Ya debería estar en mayúsculas por el Select/Input
         if (data.phoneNumber) formData.append('phoneNumber', data.phoneNumber);
 
         // Añadir campos de ubicación (asegurarse que son números si no están vacíos)
@@ -393,7 +395,10 @@ const generatePdf = () => {
     const margin = 15;
     const lineHeight = 7;
     let currentY = margin;
-
+    const fullIdCard = pdfData.idCard
+            ? `${pdfData.idCard}${pdfData.idCardExtension ? ' ' + pdfData.idCardExtension : ''}`
+            : 'No especificado';
+        addLine('Carnet de Identidad', fullIdCard); // <-- Mostrar CI con extensión
     // Título
     doc.setFontSize(18);
     doc.setFont(undefined, 'bold');
@@ -491,6 +496,38 @@ const generatePdf = () => {
                                     <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Carnet Identidad" {...register("idCard")} error={!!errors.idCard} helperText={errors.idCard?.message} disabled={loading}/> </Grid>
                                     <Grid item xs={12} sm={6}><FormControl fullWidth size="small" error={!!errors.gender} disabled={loading}><InputLabel>Género</InputLabel><Controller name="gender" control={control} render={({ field }) => (<Select label="Género" {...field}><MenuItem value=""><em>(Opcional)</em></MenuItem><MenuItem value="male">Varón</MenuItem><MenuItem value="female">Mujer</MenuItem></Select>)} /></FormControl> </Grid>
                                     <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Número Celular" {...register("phoneNumber")} error={!!errors.phoneNumber} helperText={errors.phoneNumber?.message} disabled={loading}/> </Grid>
+                                    <Grid item xs={12} sm={7} md={8}> {/* Más espacio para el número */}
+                                                <TextField
+                                                    fullWidth
+                                                    size="small"
+                                                    label="Carnet de Identidad"
+                                                    {...register("idCard")}
+                                                    error={!!errors.idCard}
+                                                    helperText={errors.idCard?.message}
+                                                    disabled={loading}
+                                                />
+                                            </Grid>
+                                            <Grid item xs={12} sm={5} md={4}> {/* Menos espacio para la extensión */}
+                                                <FormControl fullWidth size="small" error={!!errors.idCardExtension} disabled={loading}>
+                                                    <InputLabel id="idcard-ext-label">Ext.</InputLabel>
+                                                    <Controller
+                                                        name="idCardExtension"
+                                                        control={control}
+                                                        // Añade rules si la extensión es obligatoria cuando hay CI
+                                                        // rules={{ validate: value => !watch('idCard') || !!value || 'Ext. requerida si hay CI' }}
+                                                        render={({ field }) => (
+                                                            <Select labelId="idcard-ext-label" label="Ext." {...field}>
+                                                                <MenuItem value=""><em>(Opcional)</em></MenuItem>
+                                                                {/* Usar la lista de departamentos ya cargada */}
+                                                                {departments.map((dept) => (
+                                                                    <MenuItem key={dept.code} value={dept.code}>{dept.code}</MenuItem> // Mostrar código corto
+                                                                ))}
+                                                            </Select>
+                                                        )}
+                                                    />
+                                                     {errors.idCardExtension && <FormHelperText>{errors.idCardExtension.message}</FormHelperText>}
+                                                </FormControl>
+                                            </Grid>
                                 </Grid>
                             </Paper>
 

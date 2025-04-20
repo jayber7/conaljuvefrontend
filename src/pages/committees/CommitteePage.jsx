@@ -8,6 +8,7 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 const committeeData = {
     juventud: {
         title: 'Comité de Juventud',
+        detail:'La Misión de la Comisión de Juventudes es empoderar a los jóvenes de las ciudades urbanas, proporcionándoles las herramientas, conocimientos y oportunidades necesarias para ser agentes activos de cambio en su Zonas/barrios/comunidad. A través de la educación, el liderazgo, la participación en formación y capacitación orientados al emprendimiento en colaboración con alianzas estratégicas en su sector, buscamos que los jóvenes desempeñen un papel fundamental en la transformación política, económica y social de su entorno. De esta manera, fomentamos la creación de soluciones innovadoras y sostenibles para los desafíos urbanos, promoviendo el desarrollo integral de la juventud y su impacto positivo en la sociedad.',
         imageUrl: '/assets/committees/juventud-placeholder.jpg', // Ruta a la imagen en public/assets o src/assets
         members: [
             'Juan Perez (Coordinador)',
@@ -20,6 +21,7 @@ const committeeData = {
     },
     profesionales: {
         title: 'Comité de Profesionales',
+        detail:'Integrar profesionales en áreas clave dentro de las Juntas Vecinales para fortalecer la gestión de las juntas vecinales, promover el bienestar social, y fomentar la participación activa de los vecinos en la resolución de problemas locales, garantizando el desarrollo sostenible y la mejora continua de los vecinos.',
         imageUrl: '/assets/committees/profesionales-placeholder.jpg',
         members: [
             'Dr. Alberto Rios (Presidente)',
@@ -32,6 +34,7 @@ const committeeData = {
     },
     mujeres: {
         title: 'Comité de Mujeres "Bartolina Sisa"', // Nombre más específico
+        detail:'Fomentar el empoderamiento de las mujeres en las juntas vecinales de Bolivia, promoviendo su formación, emprendimiento y participación democrática. Esto se logrará mediante la educación, el desarrollo del liderazgo, la equidad de género y el acceso a la justicia, creando condiciones favorables para su desarrollo integral en los ámbitos social, político y económico. Todo esto con el fin de garantizar su inclusión activa en los procesos de toma de decisiones y gestión dentro de las comunidades urbanas, asegurando que las mujeres puedan ser protagonistas en la construcción de su futuro y el de sus comunidades.',
         imageUrl: '/assets/committees/mujeres-placeholder.jpg',
         members: [ 'Elena Quispe (Líder)', 'Rosa Mamani', 'Carmen Choque' ],
         statutesUrl: '/docs/estatuto-mujeres.pdf',
@@ -39,6 +42,7 @@ const committeeData = {
     },
     salud: {
         title: 'Comité de Salud Comunitaria',
+        detail:'',
         imageUrl: '/assets/committees/salud-placeholder.jpg',
         members: [ 'Dra. Isabel Castillo', 'Lic. Enf. Mario Vega', 'Promotor Luis Cruz' ],
         statutesUrl: null, // Puede no tener estatuto propio
@@ -46,6 +50,7 @@ const committeeData = {
     },
      aliados: {
         title: 'Aliados Estratégicos',
+        detail:'',
         imageUrl: '/assets/committees/aliados-placeholder.jpg',
         members: [
             'ONG "Desarrollo Andino"',
@@ -103,7 +108,9 @@ const CommitteePage = ({ committeeId }) => {
                 <Typography variant="h1" component="h1" gutterBottom align="center">
                     {data.title}
                 </Typography>
-
+                <Typography variant="h1" component="h1" gutterBottom align="center">
+                    {data.detail}
+                </Typography>
                 {/* Imagen */}
                 <Box sx={{ width: '100%', maxHeight: '400px', overflow: 'hidden', borderRadius: '8px', mb: 4 }}>
                     <img src={data.imageUrl || '/assets/placeholder.jpg'} // Imagen placeholder por defecto

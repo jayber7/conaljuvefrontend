@@ -18,17 +18,20 @@ const AboutPage = () => {
         </Typography>
 
         <Typography variant="h5" component="p" color="text.secondary" sx={{ mb: 4, textAlign: 'center', fontStyle: 'italic' }}>
-          La Confederación Nacional de Juntas Vecinales de Bolivia (CONALJUVE) es la máxima organización representativa de las juntas vecinales en todo el territorio nacional.
+        LA CONFEDERACIÓN NACIONAL DE JUNTAS VECINALES DE BOLIVIA - “CONALJUVE” ENTIDAD CIVIL SIN FINES DE LUCRO.
         </Typography>
 
         {/* Sección Origen */}
         <Box sx={{ mb: 5 }}>
           <Typography variant="h3" component="h2" gutterBottom color="primary.dark">
              <InfoIcon sx={{ verticalAlign: 'middle', mr: 1, fontSize: '1.5em' }} />
-             Origen y Fundación
+             MISIÓN, VISIÓN, OBJETO Y FINES
           </Typography>
           <Typography variant="body1" paragraph sx={{ lineHeight: 1.7 }}>
-            CONALJUVE fue fundada con la misión fundamental de unificar la voz y coordinar las acciones de las juntas vecinales a nivel nacional. Su creación respondió a la necesidad histórica de fortalecer la participación ciudadana activa en la toma de decisiones que afectan el desarrollo local y nacional. Nació como un ente aglutinador frente a la dispersión de las organizaciones vecinales existentes, buscando una representación sólida y efectiva.
+          (MISIÓN).- La CONALJUVE-BOLIVIA tiene por misión ser la vanguardia del país y pilar fundamental en la defensa de los derechos de la familia, luchando por la justicia, igualdad, equidad, transparencia, lucha contra la corrupción, contra la burocracia, con honestidad; promoviendo la participación y control social activa de las Juntas Vecinales en la elaboración de políticas públicas y gestión de recursos a nivel nacional, departamental y municipal, para hacer respetar y ejercer nuestros derechos constitucionales, la equidad de género y recuperar un desarrollo económico, productivo, industrial, social, político, cultural, e integral, de las Juntas Vecinales urbanas y periurbanas, desde sus regiones en armonía con la madre tierra, para VIVIR BIEN.    
+          </Typography>
+          <Typography variant="body1" paragraph sx={{ lineHeight: 1.7 }}>
+          (VISIÓN).- La CONALJUVE-BOLIVIA tiene por visión defender la equidad, la inclusión y participación en la Gestión Pública activa de las Juntas Vecinales, con poder de decisión política, económica y social en el país para recuperar el poder vecinal, con participación y control social, con toma de decisiones en las Políticas Públicas, respetar y reafirmar nuestras culturas, valores, principios ideológicos; el ejercicio pleno de nuestros derechos individuales y colectivos, a través del fortalecimiento orgánico mediante procesos de capacitación en las áreas políticas, económicas, sociales, culturales en coordinación con nuestros miembros departamentales, y municipales hasta alcanzar un desarrollo integral urbano y periurbano.
           </Typography>
         </Box>
 
@@ -36,7 +39,7 @@ const AboutPage = () => {
         <Box sx={{ mb: 5 }}>
           <Typography variant="h3" component="h2" gutterBottom color="primary.dark">
              <CheckCircleIcon sx={{ verticalAlign: 'middle', mr: 1, fontSize: '1.5em' }} />
-            Principios y Objetivos
+             (FINES). – Los fines de la CONALJUVE-BOLIVIA son:
           </Typography>
           <Typography variant="body1" paragraph>
             Los pilares fundamentales que guían el accionar de CONALJUVE son:
@@ -44,35 +47,44 @@ const AboutPage = () => {
           <List dense>
             <ListItem>
               <ListItemIcon><CheckCircleIcon color="secondary" /></ListItemIcon>
-              <ListItemText primary="La defensa inclaudicable de los derechos e intereses colectivos de los vecinos y sus comunidades." />
+              <ListItemText primary="a)	Representar y defender a sus miembros ante la vulneración de sus Derechos Constitucionalmente protegidos. " />
             </ListItem>
             <ListItem>
               <ListItemIcon><CheckCircleIcon color="secondary" /></ListItemIcon>
-              <ListItemText primary="La promoción activa de la democracia participativa, el control social efectivo y la transparencia en la gestión pública." />
+              <ListItemText primary="b)	Luchar por el mejoramiento social, económico, político y cultural de las Juntas Vecinales de Bolivia." />
             </ListItem>
              <ListItem>
               <ListItemIcon><CheckCircleIcon color="secondary" /></ListItemIcon>
-              <ListItemText primary="La lucha constante por mejorar las condiciones de vida en los barrios, exigiendo servicios básicos de calidad, seguridad ciudadana, infraestructura adecuada y desarrollo sostenible." />
+              <ListItemText primary="c)	Luchar por la consolidación de la democracia participativa, comunitaria, verdadera, solidaria y libertadora con justicia social, cuyo fin radique en eliminar toda forma de discriminación, confiriendo igualdad de oportunidades para todos nuestros miembros." />
             </ListItem>
              <ListItem>
               <ListItemIcon><CheckCircleIcon color="secondary" /></ListItemIcon>
-              <ListItemText primary="El fortalecimiento de la unidad, la organización y la capacidad de gestión del movimiento vecinal." />
+              <ListItemText primary="d)	Exigir una educación fiscal gratuita para nuestros hijos, en coordinación con padres de familia, profesores y autoridades educativas en base a la intraculturalidad e interculturalidad y plurinacionalidad. " />
             </ListItem>
             <ListItem>
               <ListItemIcon><CheckCircleIcon color="secondary" /></ListItemIcon>
-              <ListItemText primary="La fiscalización rigurosa de la gestión pública en todos los niveles de gobierno (municipal, departamental, nacional)." />
+              <ListItemText primary="e)	Luchar por las juntas vecinales periurbanas a nivel Nacional, recuperando su identidad, hábitos de consumo de sus orígenes, solidarizándonos con los pueblos originarios, por las conquistas alcanzadas por nuestros antepasados, garantizando sus derechos constitucionales." />
+            </ListItem>
+            <ListItem>
+              <ListItemIcon><CheckCircleIcon color="secondary" /></ListItemIcon>
+              <ListItemText primary="f)	Luchar por el Sistema Único de Salud, para una atención oportuna en salud, el reconocimiento de nuestros médicos tradicionales y el respeto e implementación de la medicina tradicional o natural. " />
+            </ListItem>
+            <ListItem>
+              <ListItemIcon><CheckCircleIcon color="secondary" /></ListItemIcon>
+              <ListItemText primary="g)	Promover la capacitación de nuestros dirigentes vecinales, para formar nuevos líderes, que luchen por una sociedad más justa." />
+            </ListItem>
+            <ListItem>
+              <ListItemIcon><CheckCircleIcon color="secondary" /></ListItemIcon>
+              <ListItemText primary="h)	Promover y defender los derechos de los niños, niñas, adolescentes, jóvenes, adultos mayores y personas vulnerables." />
             </ListItem>
           </List>
            <Typography variant="body1" paragraph sx={{ mt: 2 }}>
-            Sus objetivos estratégicos incluyen:
+           (OBJETO):
           </Typography>
            <List dense>
                {/* Puedes usar los mismos iconos o variar */}
-               <ListItem><ListItemIcon><CheckCircleIcon color="primary" /></ListItemIcon><ListItemText primary="Representar legítimamente a las juntas vecinales ante instancias gubernamentales, organizaciones sociales y entidades privadas." /></ListItem>
-               <ListItem><ListItemIcon><CheckCircleIcon color="primary" /></ListItemIcon><ListItemText primary="Gestionar, canalizar y hacer seguimiento a las demandas y necesidades vecinales." /></ListItem>
-               <ListItem><ListItemIcon><CheckCircleIcon color="primary" /></ListItemIcon><ListItemText primary="Promover la capacitación integral y la formación de liderazgos vecinales comprometidos y eficientes." /></ListItem>
-               <ListItem><ListItemIcon><CheckCircleIcon color="primary" /></ListItemIcon><ListItemText primary="Fomentar la solidaridad, la cooperación mutua y el intercambio de experiencias entre las juntas vecinales." /></ListItem>
-               <ListItem><ListItemIcon><CheckCircleIcon color="primary" /></ListItemIcon><ListItemText primary="Contribuir activamente al desarrollo integral y equitativo de las comunidades y del país." /></ListItem>
+               <ListItem><ListItemIcon><CheckCircleIcon color="primary" /></ListItemIcon><ListItemText primary="El objeto de la CONALJUVE-BOLIVIA es representar defender sus derechos en todos los niveles del Estado Plurinacional a las Federaciones Departamentales de Juntas Vecinales, Federaciones de Juntas Vecinales Municipales y por intermedio de estas a las Juntas vecinales establecidas en todo el Territorio Nacional del Estado Plurinacional, asimismo ante organismos internacionales y otros, con participación directa de nuestros miembros en equilibrio y armonía con la madre tierra, para el “Vivir Bien”." /></ListItem>
+               <ListItem><ListItemIcon><CheckCircleIcon color="primary" /></ListItemIcon><ListItemText primary="(ALCANCE DE LAS ACTIVIDADES). - Los alcances de las actividades del ente matriz vecinal están orientadas a lograr el bien común, entendiéndose como el beneficio en favor de nuestros miembros y la de sus familias para el vivir bien. " /></ListItem>
            </List>
         </Box>
 
@@ -134,6 +146,12 @@ const AboutPage = () => {
                           </Typography>
                           <Typography variant="body2" color="text.secondary" align="center">
                               Instancias intermedias de organización presentes en ciudades grandes o regiones específicas, que agrupan juntas vecinales por distritos o zonas geográficas.
+                              FEDERACIÓN DE JUNTAS VECINALES DE CHUQUISACA (FEDJUVE-CH)
+                              FEDERACIÓN DE JUNTAS VECINALES DE COCHABAMBA (FEDJUVE-CBB)
+                              FEDERACIÓN DE JUNTAS VECINALES DE PANDO (FEDJUVE-PANDO)
+                              COORDINADORA DEPARTAMENTAL DE JUNTAS VECINALES PERIURBANAS Y ORGANIZACIONES TERRITORIALES DE BASE (CODJUVEPURO).
+                              FEDERACIÓN DE JUNTAS VECINALES FEJUVE – CERCADO. (BENI)
+
                           </Typography>
                       </CardContent>
                   </Card>
