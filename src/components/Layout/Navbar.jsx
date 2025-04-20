@@ -5,6 +5,7 @@ import {
   AppBar, Toolbar, Typography, Button, Box, IconButton, Menu, MenuItem, Avatar, Tooltip, Container, Divider,InputBase, alpha
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'; // Icono para menú desplegable
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import MenuIcon from '@mui/icons-material/Menu';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import logoConaljuve from '../../assets/LogoCONALJUVE.png'; // Ajusta la extensión (.png, .jpg, .svg)
@@ -53,7 +54,18 @@ const Navbar = ({ onLoginClick, onRegisterClick }) => {
 const handleCloseCommitteesMenu = () => {
     setAnchorElCommittees(null);
 };
-
+const handleOpenCreateNewsModal = () => {
+  handleCloseUserMenu(); // Cerrar menú de usuario
+  // Lógica para abrir el modal:
+  // Opción 1: Si el modal se controla en un nivel superior (ej. MainLayout o AdminPage)
+  if (onOpenNewsModal) { // Verifica si la prop existe
+       onOpenNewsModal(); // Llama a la función pasada como prop
+  } else {
+      // Opción 2: Navegar a una ruta específica que abra el modal (menos directo)
+      // navigate('/admin?openModal=true'); // Requeriría lógica en AdminPage para leer query param
+      console.warn("Función para abrir modal de noticias no proporcionada a Navbar");
+  }
+};
 // --- FIN HANDLERS ---
   // Determinar las iniciales como fallback
   const getInitials = (name) => {
@@ -83,7 +95,7 @@ const userInitials = getInitials(user?.name)
   return (
      // --- MODIFICACIÓN: Añadir estilos de fondo al AppBar ---
      <AppBar
-     position="sticky"
+     position="fixed"
      elevation={3} // Puedes añadir algo de sombra si quieres
      sx={{
          backgroundColor: '#222', // Fondo oscuro base
@@ -117,40 +129,40 @@ const userInitials = getInitials(user?.name)
      }}
  >
  {/* --- FIN MODIFICACIÓN --- */}
-      <Container maxWidth="lg"> {/* Controla el ancho máximo */}
-        <Toolbar disableGutters sx={{ position: 'relative', minHeight: {xs: 56, md: 70} }}> {/* Altura mínima y posición relativa */}
+      <Container maxWidth="lg" sx={{ height: '100%' }}> {/* Controla el ancho máximo */}
+        <Toolbar disableGutters sx={{ height: '100%', position: 'relative', minHeight: {xs: 56, md: 70} }}> {/* Altura mínima y posición relativa */}
 
           {/* --- Logo --- */}
           {/* <RouterLink to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', marginRight: '16px' }}> */}
-                        <Box
-                            component={RouterLink}
-                            to="/"
-                            sx={{
-                              position: { xs:'relative', md: 'absolute' }, // Relativo en móvil, absoluto en desktop
-                              left: { xs: 0, md: '-10px' }, // Desplazado a la izquierda en desktop
-                              top: { xs: 0, md: '-15px' }, // Desplazado hacia arriba en desktop
-                              zIndex: 1301, // Encima del AppBar y otros elementos
-                              bgcolor: 'background.paper', // Fondo blanco para el logo
-                              p: { xs: 0.5, md: 1 }, // Padding alrededor del logo
-                              borderRadius: '4px', // Bordes redondeados
-                              boxShadow: '0px 4px 8px rgba(0,0,0,0.2)', // Sombra para destacar
-                              display: 'inline-block', // Para que el padding funcione bien
-                              lineHeight: 0, // Evitar espacio extra
-                              transform: {xs: 'none', md: 'translateY(10px)'} // Ajuste vertical fino si es necesario
-                            }}
-                            // alt="Logo CONALJUVE"
-                            // src={logoConaljuve} // Usar el logo importado
-                        >
-                          <img
-                            
-                            src={logoConaljuve}
-                            alt="Logo CONALJUVE"
-                            style={{
-                                height: '80px', // Tamaño del logo (ajusta)
-                                display: 'block',
-                            }}
-                        />
-                        </Box>
+        <Box
+            component={RouterLink}
+            to="/"
+            sx={{
+              position: { xs:'relative', md: 'absolute' }, // Relativo en móvil, absoluto en desktop
+              left: { xs: 0, md: '-10px' }, // Desplazado a la izquierda en desktop
+              top: { xs: 0, md: '-15px' }, // Desplazado hacia arriba en desktop
+              zIndex: 1301, // Encima del AppBar y otros elementos
+              bgcolor: 'background.paper', // Fondo blanco para el logo
+              p: { xs: 0.5, md: 1 }, // Padding alrededor del logo
+              borderRadius: '4px', // Bordes redondeados
+              boxShadow: '0px 4px 8px rgba(0,0,0,0.2)', // Sombra para destacar
+              display: 'inline-block', // Para que el padding funcione bien
+              lineHeight: 0, // Evitar espacio extra
+              transform: {xs: 'none', md: 'translateY(10px)'} // Ajuste vertical fino si es necesario
+            }}
+            // alt="Logo CONALJUVE"
+            // src={logoConaljuve} // Usar el logo importado
+        >
+          <img
+            
+            src={logoConaljuve}
+            alt="Logo CONALJUVE"
+            style={{
+                height: '100px', // Tamaño del logo (ajusta)
+                display: 'block',
+            }}
+        />
+        </Box>
                         
 
           <Typography
@@ -159,7 +171,7 @@ const userInitials = getInitials(user?.name)
             component={RouterLink}
             to="/"
             sx={{
-              ml: 12,
+              ml: 16,
               display: { xs: 'none', md: 'flex' }, // Oculto en móvil, visible en desktop
               fontWeight: 700,
               // letterSpacing: '.1rem',
@@ -203,8 +215,8 @@ const userInitials = getInitials(user?.name)
               ))}
               {/* Separador y Comités */}
               <Divider />
-              <MenuItem onClick={handleOpenCommitteesMenu} sx={{ justifyContent: "space-between" }}>
-                  Comités <KeyboardArrowDownIcon fontSize='small'/>
+              <MenuItem onClick={handleOpenCommitteesMenu} sx={{ justifyContent: "space-between", minHeight: 'auto', }}>
+                  Comités<KeyboardArrowDownIcon fontSize='small'/>
               </MenuItem>
               {committeePages.map((page) => (
                                 <MenuItem key={page.name} onClick={() => handleNavigate(page.path)} sx={{ pl: 4 }}> {/* Indentación */}
@@ -282,21 +294,21 @@ const userInitials = getInitials(user?.name)
 
           {/* --- Botones de Autenticación / Menú de Usuario --- */}
           <Box sx={{ flexGrow: 0 }}>
-            {isAuthenticated ? (
+            {isAuthenticated && user? (
               <>
                 <Tooltip title="Abrir menú">
                   <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                     {/* Usar iniciales o imagen de perfil si la hubiera */}
                     <Avatar
-                                            alt={user.name || user.username} // Texto alternativo para accesibilidad
-                                            src={user.profilePictureUrl || undefined} // Pasar la URL de la foto aquí
-                                            sx={{
-                                                bgcolor: user.profilePictureUrl ? 'transparent' : 'secondary.main', // Color de fondo solo si NO hay imagen
-                                                width: 32, height: 32, fontSize: '0.8rem'
-                                            }}
-                                        >
-                                            {/* Fallback a Iniciales si no hay foto */}
-                                            {!user.profilePictureUrl && userInitials}
+                    alt={user.name || user.username} // Texto alternativo para accesibilidad
+                    src={user.profilePictureUrl || undefined} // Pasar la URL de la foto aquí
+                    sx={{
+                        bgcolor: user.profilePictureUrl ? 'transparent' : 'secondary.main', // Color de fondo solo si NO hay imagen
+                        width: 32, height: 32, fontSize: '0.8rem'
+                    }}
+                    >
+                    {/* Fallback a Iniciales si no hay foto */}
+                    {!user.profilePictureUrl && userInitials}
                     </Avatar>
                   </IconButton>
                 </Tooltip>
@@ -316,9 +328,14 @@ const userInitials = getInitials(user?.name)
                   <Divider />
                   {/* <MenuItem onClick={() => handleNavigate('/perfil')}>Perfil</MenuItem> */}
                   {(isAdmin || isStaff) && (
-                           <MenuItem onClick={() => handleNavigate('/admin')}>
-                               <AdminPanelSettingsIcon sx={{ mr: 1, fontSize: '1.2rem' }}/> Administración
-                           </MenuItem>
+                    <>
+                      <MenuItem onClick={handleOpenCreateNewsModal}> {/* <-- Llamar handler modal */}
+                      <AddCircleOutlineIcon sx={{ mr: 1, fontSize: '1.2rem' }} /> Crear Noticia
+                      </MenuItem>
+                      <MenuItem onClick={() => handleNavigate('/admin')}>
+                      <AdminPanelSettingsIcon sx={{ mr: 1, fontSize: '1.2rem' }}/> Administración
+                      </MenuItem>
+                    </>
                   )}
                   <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
                 </Menu>

@@ -43,7 +43,7 @@ const Footer = () => {
             }}
         >
             <Container maxWidth="lg">
-                <Grid container spacing={4} justifyContent="space-between">
+                <Grid container spacing={{ xs: 4, md: 5 }}>
 
                     {/* --- Columna 1: Descubre / Quiénes Somos --- */}
                     <Grid xs={12} sm={6} md={3}>

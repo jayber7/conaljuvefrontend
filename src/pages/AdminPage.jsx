@@ -164,7 +164,7 @@ const AdminPage = () => {
     
     <Container maxWidth="lg">
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h2" component="h1">
+        <Typography variant="h2" component="h1"  sx={{ flexGrow: 1, textAlign: 'center', mr: { xs: 0, sm: 2 } }} >
           Gestionar Noticias
         </Typography>
         {(isAdmin || isStaff) && (

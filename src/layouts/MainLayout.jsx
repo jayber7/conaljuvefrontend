@@ -39,13 +39,14 @@ const MainLayout = () => {
     setRegisterOpen(true);
   };
 
+  const NAVBAR_HEIGHT = 64; // Ejemplo, ajusta si tu AppBar es más alto
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar onLoginClick={handleLoginOpen} onRegisterClick={handleRegisterOpen} />
 
       {/* Contenido principal con padding */}
-      <Container component="main" sx={{ flexGrow: 1, py: 4 /* Padding vertical */ }}>
+      <Container component="main" maxWidth="lg" sx={{ flexGrow: 1, py: 4,  mt: `${NAVBAR_HEIGHT}px`,pt: 4, position: 'relative',zIndex: 1  /* Padding vertical */ }}>
         <Outlet /> {/* Aquí se renderizan las páginas */}
       </Container>
 

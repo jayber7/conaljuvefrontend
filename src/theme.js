@@ -63,7 +63,26 @@ const theme = createTheme({
                 borderRadius: '12px',
             }
         }
-    }
+    },
+    // --- AÑADIR ESTILOS GLOBALES PARA MenuItem ---
+    MuiMenuItem: {
+      styleOverrides: {
+        root: { // Aplicar al elemento raíz del MenuItem
+          paddingTop: 4, // Valor en píxeles (o theme.spacing(0.5))
+          paddingBottom: 4, // Valor en píxeles (o theme.spacing(0.5))
+          minHeight: 'auto', // Quitar altura mínima por defecto si interfiere
+          // Opcional: ajustar tamaño de fuente global para items de menú
+          fontSize: '0.9rem',
+        },
+      },
+      // También puedes definir variantes 'dense' si MUI las soporta para MenuItem
+      // variants: [
+      //   {
+      //     props: { dense: true },
+      //     style: { paddingTop: 2, paddingBottom: 2 },
+      //   },
+      // ],
+    },
   },
 });
 

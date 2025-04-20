@@ -104,7 +104,7 @@ const HomePage = () => {
             </Box>
             {/* --- FIN BANNER --- */}
 
-      <Typography variant="h3" component="h3" gutterBottom>
+      <Typography variant="h3" component="h3" gutterBottom  sx={{ flexGrow: 1, textAlign: 'center', mr: { xs: 0, sm: 2 } }} >
         Últimas Noticias
       </Typography>
 
