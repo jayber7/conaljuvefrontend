@@ -5,9 +5,8 @@ console.log("API Base URL:", API_URL); // Para depuración
 
 const api = axios.create({
   baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: {'Content-Type': 'application/json'},
+  withCredentials: true, // <--- ¡ASEGÚRATE DE QUE ESTÉ PRESENTE Y SEA TRUE!
 });
 
 // Interceptor para añadir token

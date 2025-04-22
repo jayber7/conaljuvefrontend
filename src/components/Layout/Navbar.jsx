@@ -11,6 +11,7 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import logoConaljuve from '../../assets/LogoCONALJUVE.png'; // Ajusta la extensión (.png, .jpg, .svg)
 import pattern from '../../assets/pattern.png';
 import SearchIcon from '@mui/icons-material/Search'; // Icono de búsqueda
+import FacebookIcon from '@mui/icons-material/Facebook';
 
 const pages = [ // Elementos principales del menú
   { name: 'Inicio', path: '/' },
@@ -24,8 +25,12 @@ const committeePages = [
   { name: 'Comité de Salud', path: '/comites/salud' },
   { name: 'Aliados Estratégicos', path: '/comites/aliados' }, // O '/aliados-estrategicos' si prefieres ruta separada
 ];
-const Navbar = ({ onLoginClick, onRegisterClick }) => {
+//const Navbar = ({ onLoginClick, onRegisterClick }) => {
+const Navbar = () => {
   const { isAuthenticated, user, isAdmin, isStaff, logout } = useAuth();
+   // URL del endpoint de inicio de Facebook en el backend
+  const facebookLoginUrl = `${import.meta.env.VITE_API_URL || '/api'}/auth/facebook`;
+  console.log('⬇️ Navbar - isAuthenticated:', isAuthenticated, 'User:', user); // <-- DEBUG
   const navigate = useNavigate();
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
@@ -35,6 +40,51 @@ const Navbar = ({ onLoginClick, onRegisterClick }) => {
   const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
   const handleCloseUserMenu = () => setAnchorElUser(null);
 
+  const handleFacebookLogin = () => {
+    const popup = window.open(facebookLoginUrl, 'facebook-login', 'width=600,height=700,scrollbars=yes');
+
+    const handleAuthMessage = (event) => {
+        // Verificar origen por seguridad
+        // Origen esperado podría ser la URL base del frontend o la del backend si el script se sirve desde ahí
+        // Ajusta esta verificación según sea necesario. Por ahora, aceptaremos del mismo origen.
+        // const expectedOrigin = process.env.NODE_ENV === 'production' ? 'TU_DOMINIO_FRONTEND' : window.location.origin;
+        // if (event.origin !== expectedOrigin) { return; }
+
+        if (event.data?.type === 'auth-success' && event.data?.payload) {
+            const { user: loggedInUser, token } = event.data.payload;
+            console.log("Auth Success Mensaje Recibido:", { loggedInUser, token });
+
+            // 1. Guardar Token
+            localStorage.setItem('authToken', token);
+            // 2. Actualizar Header Axios (ya debería hacerlo el interceptor, pero por si acaso)
+            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            // 3. Actualizar AuthContext: La forma más limpia es llamar a refetchUser
+            //    para que AuthContext vuelva a pedir /me con el nuevo token/sesión.
+            refetchUser(); // <-- Llama a la función del contexto para actualizar el estado
+
+            // 4. Limpiar listener
+            window.removeEventListener('message', handleAuthMessage);
+
+        } else if (event.data?.type === 'auth-error') {
+            console.error("Auth Error Mensaje Recibido:", event.data.error);
+            // Mostrar mensaje de error al usuario (puedes usar un estado o un toast)
+            alert(`Error de inicio de sesión con Facebook: ${event.data.error || 'desconocido'}`);
+             window.removeEventListener('message', handleAuthMessage);
+        }
+    };
+
+    // Escuchar mensajes del popup
+    window.addEventListener('message', handleAuthMessage, false);
+
+    // Opcional: Verificar si el popup se cerró sin enviar mensaje
+    const checkPopupClosed = setInterval(() => {
+        if (popup && popup.closed) {
+            clearInterval(checkPopupClosed);
+            window.removeEventListener('message', handleAuthMessage); // Asegurar limpieza
+            console.log("Popup cerrado por el usuario o después de mensaje.");
+        }
+    }, 500); // Revisar cada medio segundo
+  };
   const handleLogout = () => {
     logout();
     handleCloseUserMenu();
@@ -341,14 +391,31 @@ const userInitials = getInitials(user?.name)
                 </Menu>
               </>
             ) : (
-              <Box>
-                <Button variant="outlined" color="primary" sx={{ mr: 1 }} onClick={onLoginClick}>
-                  Iniciar Sesión
-                </Button>
-                <Button variant="contained" color="secondary" onClick={onRegisterClick}>
-                  Registrarse
-                </Button>
-              </Box>
+              // <Box>
+              //   <Button variant="outlined" color="primary" sx={{ mr: 1 }} onClick={onLoginClick}>
+              //     Iniciar Sesión
+              //   </Button>
+              //   <Button variant="contained" color="secondary" onClick={onRegisterClick}>
+              //     Registrarse
+              //   </Button>
+              // </Box>
+              // --- BOTÓN FACEBOOK LOGIN ---
+              <Button
+              variant="contained"
+              color="primary" // O un color azul de Facebook
+              startIcon={<FacebookIcon />}
+              onClick={handleFacebookLogin} // <-- LLAMAR AL HANDLER DEL POPUP
+              //href={facebookLoginUrl} // Enlace directo al backend
+              // Quitar rel="noopener noreferrer" si es del mismo origen base
+              // (aunque no hace daño)
+              sx={{
+                  // Estilos opcionales para el botón de FB
+                  // backgroundColor: '#1877F2',
+                  // '&:hover': { backgroundColor: '#166FE5' }
+              }}
+          >
+              Acceder con Facebook
+          </Button>
             )}
           </Box>
         </Toolbar>

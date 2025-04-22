@@ -1,4 +1,4 @@
-// src/components/Auth/RegisterModal.jsx
+// src/components/Auth/CompleteProfileModal.jsx
 import React, { useState, useEffect, useRef, useCallback  } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useAuth } from '../../contexts/AuthContext';
@@ -22,8 +22,8 @@ import SwitchCameraIcon from '@mui/icons-material/SwitchCamera'; // Icono para c
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable'; // Para tablas en PDF (opcional)
 
-const RegisterModal = ({ open, onClose, onSwitchToLogin }) => {
-  const { register: authRegister } = useAuth();
+const CompleteProfileModal  = ({ open, onClose }) => {
+  const { user, refetchUser } = useAuth(); // Obtener usuario actual y función para recargar datos
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -44,10 +44,10 @@ const [pdfData, setPdfData] = useState(null); // Estado para guardar datos del P
   const { register, handleSubmit, control, watch, setValue, reset, formState: { errors } } = useForm({
       defaultValues: {
           name: '',
-          username: '',
-          email: '',
-          password: '',
-          confirmPassword: '',
+        //   username: '',
+        //   email: '',
+        //   password: '',
+        //   confirmPassword: '',
           location: { departmentCode: '', provinceCode: '', municipalityCode: '', zone: '' },
           birthDate: null, // Usar null para DatePicker
           gender: '', // Usar '' para Select y manejar opción 'Seleccionar'
@@ -300,13 +300,38 @@ const [pdfData, setPdfData] = useState(null); // Estado para guardar datos del P
   }
    // --- Fin Sugerencia ---
 
+// --- useEffect para poblar con datos del usuario ---
+useEffect(() => {
+    if (user && open) {
+        console.log("Poblando modal Completar Perfil con datos de:", user);
+        reset({
+            name: user.name || '',
+            location: {
+                departmentCode: user.location?.departmentCode || '',
+                provinceCode: user.location?.provinceCode || '',
+                municipalityCode: user.location?.municipalityCode || '',
+                zone: user.location?.zone || ''
+            },
+            birthDate: user.birthDate ? new Date(user.birthDate) : null,
+            gender: typeof user.gender === 'boolean' ? (user.gender ? 'male' : 'female') : '',
+            idCard: user.idCard || '',
+            idCardExtension: user.idCardExtension || '',
+            phoneNumber: user.phoneNumber || '',
+            // No resetear profilePicture aquí, se maneja por separado
+        });
+         // Cargar Prov/Mun si ya hay Depto/Prov en los datos del usuario
+    } else if (open) {
+        // Si no hay usuario (raro si está abierto) o se abre sin user, resetear
+         reset({ /* ... defaultValues vacíos ... */ });
+    }
+}, [user, open, reset]); // Depender de user y open
 
   const onSubmit = async (data) => {
-    if (data.password !== data.confirmPassword) { /* ... (manejo error contraseña) ... */ return; }
+    //if (data.password !== data.confirmPassword) { /* ... (manejo error contraseña) ... */ return; }
     setLoading(true); setError(''); setSuccess(false); setPdfData(null); // Resetear PDF data
     
 
-    const formData = new FormData();
+    //const formData = new FormData();
     
     // // --- MODIFICACIÓN: Asegurar que location tenga códigos numéricos ---
     // const { confirmPassword, ...rest } = data;
@@ -331,52 +356,67 @@ const [pdfData, setPdfData] = useState(null); // Estado para guardar datos del P
     //  Object.keys(userData).forEach(key => userData[key] === undefined && delete userData[key]);
     //  Object.keys(userData.location).forEach(key => userData.location[key] === undefined && delete userData.location[key]);
     // // --- FIN MODIFICACIÓN ---
-    formData.append('name', data.name);
-        formData.append('username', data.username);
-        formData.append('email', data.email);
-        formData.append('password', data.password);
-        // No añadir confirmPassword
-        if (data.birthDate) formData.append('birthDate', data.birthDate.toISOString().split('T')[0]);
-        const genderValue = data.gender === 'male' ? true : (data.gender === 'female' ? false : undefined);
-        if (genderValue !== undefined) formData.append('gender', genderValue); // Enviar true/false como string
-        if (data.idCard) formData.append('idCard', data.idCard);
-        if (data.idCardExtension) formData.append('idCardExtension', data.idCardExtension); // Ya debería estar en mayúsculas por el Select/Input
-        if (data.phoneNumber) formData.append('phoneNumber', data.phoneNumber);
+    // formData.append('name', data.name);
+    //     formData.append('username', data.username);
+    //     formData.append('email', data.email);
+    //     formData.append('password', data.password);
+    //     // No añadir confirmPassword
+    //     if (data.birthDate) formData.append('birthDate', data.birthDate.toISOString().split('T')[0]);
+    //     const genderValue = data.gender === 'male' ? true : (data.gender === 'female' ? false : undefined);
+    //     if (genderValue !== undefined) formData.append('gender', genderValue); // Enviar true/false como string
+    //     if (data.idCard) formData.append('idCard', data.idCard);
+    //     if (data.idCardExtension) formData.append('idCardExtension', data.idCardExtension); // Ya debería estar en mayúsculas por el Select/Input
+    //     if (data.phoneNumber) formData.append('phoneNumber', data.phoneNumber);
 
-        // Añadir campos de ubicación (asegurarse que son números si no están vacíos)
-        if (data.location.departmentCode) formData.append('location[departmentCode]', Number(data.location.departmentCode));
-        if (data.location.provinceCode) formData.append('location[provinceCode]', Number(data.location.provinceCode));
-        if (data.location.municipalityCode) formData.append('location[municipalityCode]', Number(data.location.municipalityCode));
-        if (data.location.zone) formData.append('location[zone]', data.location.zone);
+    //     // Añadir campos de ubicación (asegurarse que son números si no están vacíos)
+    //     if (data.location.departmentCode) formData.append('location[departmentCode]', Number(data.location.departmentCode));
+    //     if (data.location.provinceCode) formData.append('location[provinceCode]', Number(data.location.provinceCode));
+    //     if (data.location.municipalityCode) formData.append('location[municipalityCode]', Number(data.location.municipalityCode));
+    //     if (data.location.zone) formData.append('location[zone]', data.location.zone);
 
-        // Añadir el archivo de imagen SI existe
-        if (data.profilePicture) {
-            formData.append('profilePicture', data.profilePicture); // 'profilePicture' debe coincidir con upload.single()
-        }
+    //     // Añadir el archivo de imagen SI existe
+    //     if (data.profilePicture) {
+    //         formData.append('profilePicture', data.profilePicture); // 'profilePicture' debe coincidir con upload.single()
+    //     }
         // --- FIN MODIFICACIÓN ---
+    const profileData = {
+             name: data.name,
+             location: {
+                 departmentCode: data.location.departmentCode ? Number(data.location.departmentCode) : undefined,
+                 provinceCode: data.location.provinceCode ? Number(data.location.provinceCode) : undefined,
+                 municipalityCode: data.location.municipalityCode ? Number(data.location.municipalityCode) : undefined,
+                 zone: data.location.zone || undefined,
+             },
+             birthDate: data.birthDate ? data.birthDate.toISOString().split('T')[0] : undefined,
+             gender: data.gender === 'male' ? true : (data.gender === 'female' ? false : undefined),
+             idCard: data.idCard || undefined,
+             idCardExtension: data.idCardExtension || undefined,
+             phoneNumber: data.phoneNumber || undefined,
+        };
+         Object.keys(profileData).forEach(key => profileData[key] === undefined && delete profileData[key]);
+         Object.keys(profileData.location).forEach(key => profileData.location[key] === undefined && delete profileData.location[key]);
+         if (Object.keys(profileData.location).length === 0) delete profileData.location;
 
     try {
-      //await authRegister(userData); // Enviar datos formateados
-      await api.post('/auth/register', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data', // IMPORTANTE para subida de archivos
-                },
-            });
-      setSuccess(true);
+        await api.put('/users/me/profile', profileData);
+        setSuccess(true);
+        await refetchUser(); // Recargar datos del usuario en el contexto
+        const timer = setTimeout(() => { onClose(); }, 2000); // Cerrar después de éxito
+        return () => clearTimeout(timer);
       // --- GUARDAR DATOS PARA PDF (SIN la contraseña ni el archivo) ---
-      const dataForPdf = {
-        name: data.name, username: data.username, email: data.email,
-        birthDate: data.birthDate ? data.birthDate.toLocaleDateString('es-ES') : 'No especificada', // Formatear fecha
-        gender: data.gender === 'male' ? 'Varón' : (data.gender === 'female' ? 'Mujer' : 'No especificado'),
-        idCard: data.idCard || 'No especificado',
-        phoneNumber: data.phoneNumber || 'No especificado',
-        // Obtener nombres de ubicación (necesitas tenerlos en estado o buscarlos)
-        departmentName: departments.find(d => d.code == data.location.departmentCode)?.name || `Código ${data.location.departmentCode || 'N/A'}`,
-        provinceName: provinces.find(p => p.code == data.location.provinceCode)?.name || `Código ${data.location.provinceCode || 'N/A'}`,
-        municipalityName: municipalities.find(m => m.code == data.location.municipalityCode)?.name || `Código ${data.location.municipalityCode || 'N/A'}`,
-        zone: data.location.zone || 'No especificada',
-        registrationDate: new Date().toLocaleString('es-ES') // Fecha/hora del registro
-    };
+    //   const dataForPdf = {
+    //     name: data.name, username: data.username, email: data.email,
+    //     birthDate: data.birthDate ? data.birthDate.toLocaleDateString('es-ES') : 'No especificada', // Formatear fecha
+    //     gender: data.gender === 'male' ? 'Varón' : (data.gender === 'female' ? 'Mujer' : 'No especificado'),
+    //     idCard: data.idCard || 'No especificado',
+    //     phoneNumber: data.phoneNumber || 'No especificado',
+    //     // Obtener nombres de ubicación (necesitas tenerlos en estado o buscarlos)
+    //     departmentName: departments.find(d => d.code == data.location.departmentCode)?.name || `Código ${data.location.departmentCode || 'N/A'}`,
+    //     provinceName: provinces.find(p => p.code == data.location.provinceCode)?.name || `Código ${data.location.provinceCode || 'N/A'}`,
+    //     municipalityName: municipalities.find(m => m.code == data.location.municipalityCode)?.name || `Código ${data.location.municipalityCode || 'N/A'}`,
+    //     zone: data.location.zone || 'No especificada',
+    //     registrationDate: new Date().toLocaleString('es-ES') // Fecha/hora del registro
+    // };
    setPdfData(dataForPdf);
    // --- FIN GUARDAR DATOS ---
    reset();
@@ -384,8 +424,8 @@ const [pdfData, setPdfData] = useState(null); // Estado para guardar datos del P
    // Quitar cierre automático para permitir descarga de PDF
    // const timer = setTimeout(() => { onClose(); }, 2500);
    // return () => clearTimeout(timer);-
-    } catch (err) { setError(err.message || 'Error desconocido al registrarse.'); }
-    finally { setLoading(false); }
+} catch (err) { setError(err.message || err.response?.data?.message || 'Error al actualizar perfil.'); }
+finally { setLoading(false); }
   };
 // --- Función para Generar PDF ---
 const generatePdf = () => {
@@ -458,11 +498,13 @@ const generatePdf = () => {
 };
 // --- Fin Generar PDF ---
   return (
+    <Alert>si</Alert>,
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth> {/* Aumentado a lg */}
-        <DialogTitle sx={{ borderBottom: 1, borderColor: 'divider' }}>Crear Cuenta</DialogTitle>
-        <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
+        <DialogTitle sx={{ borderBottom: 1, borderColor: 'divider' }}>{user?.isProfileComplete ? 'Actualizar Perfil' : 'Completa tu Perfil'}</DialogTitle>
+        <form onSubmit={handleSubmit(onSubmit)} >
             <DialogContent sx={{ bgcolor: 'grey.50', p: { xs: 2, sm: 3 } }}>
+            {success && <Alert severity="success" sx={{ mb: 2 }}>¡Perfil actualizado con éxito!</Alert>}
                 {/* Mensaje de Éxito con Botón PDF */}
                 {success && (
                     <Alert
@@ -477,9 +519,10 @@ const generatePdf = () => {
                         sx={{ mb: 2 }}
                     >
                         ¡Registro exitoso! Puedes descargar tu comprobante.
-                        <Button onClick={onClose} size="small" sx={{ml: 2}}>Cerrar</Button> {/* Botón Cerrar */}
+                        <Button onClick={onClose} size="small" sx={{ml: 2}}>Cerrar</Button> 
                     </Alert>
                 )}
+
                 {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
                 {/* Ocultar formulario si hubo éxito */}
@@ -531,7 +574,7 @@ const generatePdf = () => {
                                 </Grid>
                             </Paper>
 
-                            <Paper sx={{ p: 2.5 }} variant="outlined">
+                            {/* <Paper sx={{ p: 2.5 }} variant="outlined">
                                 <Typography variant="h6" gutterBottom>Datos de Cuenta</Typography>
                                  <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Nombre Usuario*" {...register("username", { required: true })} error={!!errors.username} helperText={errors.username?.message} disabled={loading}/> </Grid>
@@ -539,7 +582,7 @@ const generatePdf = () => {
                                     <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Contraseña*" type="password" {...register("password", { required: true, minLength: 6 })} error={!!errors.password} helperText={errors.password?.message || (errors.password?.type === 'minLength' ? 'Mínimo 6 caracteres' : '')} disabled={loading}/> </Grid>
                                     <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Confirmar Contraseña*" type="password" {...register("confirmPassword", { required: true })} error={!!errors.confirmPassword} helperText={errors.confirmPassword?.message} disabled={loading}/> </Grid>
                                  </Grid>
-                            </Paper>
+                            </Paper> */}
                         </Grid>
 
                         {/* Columna Derecha: Foto y Ubicación */}
@@ -597,7 +640,7 @@ const generatePdf = () => {
                         </Grid>
                     </Grid>
                 )}
-                {!success && <Typography /* Link Inicia sesión */ />}
+                
             </DialogContent>
             <DialogActions sx={{ p: '16px 24px', borderTop: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
                  {/* Mostrar Cancelar solo si no hubo éxito */}
@@ -613,4 +656,4 @@ const generatePdf = () => {
 );
 };
 
-export default RegisterModal;
+export default CompleteProfileModal;

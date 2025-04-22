@@ -1,68 +1,61 @@
+// src/layouts/MainLayout.jsx
 import React, { useState, useEffect } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet /*, useNavigate*/ } from 'react-router-dom'; // useNavigate no es necesario aquí para esto
 import { Box, Container } from '@mui/material';
-import Navbar from '../components/Layout/Navbar'; // Crear este componente
-import Footer from '../components/Layout/Footer'; // Crear este componente
-import LoginModal from '../components/Auth/LoginModal'; // Crear este componente
-import RegisterModal from '../components/Auth/RegisterModal'; // Crear este componente
+import Navbar from '../components/Layout/Navbar';
+import Footer from '../components/Layout/Footer';
+import CompleteProfileModal from '../components/Auth/CompleteProfileModal';
+import { useAuth } from '../contexts/AuthContext';
 
 const MainLayout = () => {
-  const [loginOpen, setLoginOpen] = useState(false);
-  const [registerOpen, setRegisterOpen] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
+  const { user, isAuthenticated, loading } = useAuth(); // Obtener estado completo
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
 
-  // Efecto para abrir el modal de login si viene de ProtectedRoute
+  // Efecto para abrir modal si el usuario está logueado pero perfil incompleto
   useEffect(() => {
-    if (location.state?.openLogin) {
-      setLoginOpen(true);
-      // Limpiar el estado para que no se abra de nuevo en recargas
-      navigate(location.pathname, { replace: true, state: {} });
+    console.log("MainLayout Effect:", { loading, isAuthenticated, user }); // <-- DEBUG LOG
+
+    // Condiciones clave:
+    // 1. Ya no debe estar cargando (loading === false)
+    // 2. Debe estar autenticado (isAuthenticated === true)
+    // 3. El objeto 'user' debe existir
+    // 4. La propiedad 'isProfileComplete' en 'user' debe ser false
+    if (!loading && isAuthenticated && user && user.isProfileComplete === false) {
+      console.log("Condición cumplida: Abriendo modal Completar Perfil...");
+      setProfileModalOpen(true);
+    } else {
+      // Opcional: Asegurarse de que esté cerrado en otros casos (aunque 'open' controla esto)
+      // console.log("Condición NO cumplida o usuario ya completo/no auth/cargando.");
+      // setProfileModalOpen(false); // Podría causar cierres inesperados si el usuario lo abre manualmente
     }
-  }, [location, navigate]);
 
+    // Las dependencias son correctas: este efecto se re-ejecuta cuando
+    // cambia el estado de carga, autenticación o los datos del usuario.
+  }, [isAuthenticated, user, loading]);
 
-  const handleLoginOpen = () => setLoginOpen(true);
-  const handleLoginClose = () => setLoginOpen(false);
-  const handleRegisterOpen = () => setRegisterOpen(true);
-  const handleRegisterClose = () => setRegisterOpen(false);
-
-  // Función para cambiar de modal Registro -> Login
-  const switchToLogin = () => {
-    setRegisterOpen(false);
-    setLoginOpen(true);
+  const handleProfileModalClose = () => {
+      console.log("Cerrando modal Completar Perfil...");
+      setProfileModalOpen(false);
+      // Considera qué pasa si el usuario cierra sin guardar y el perfil SIGUE incompleto.
+      // ¿Debería volver a abrirse en la siguiente carga? La lógica actual lo haría.
   };
-
-   // Función para cambiar de modal Login -> Registro
-  const switchToRegister = () => {
-    setLoginOpen(false);
-    setRegisterOpen(true);
-  };
-
-  const NAVBAR_HEIGHT = 64; // Ejemplo, ajusta si tu AppBar es más alto
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Navbar onLoginClick={handleLoginOpen} onRegisterClick={handleRegisterOpen} />
+      <Navbar /> {/* Navbar no necesita props para abrir modales aquí */}
 
-      {/* Contenido principal con padding */}
-      <Container component="main" maxWidth="lg" sx={{ flexGrow: 1, py: 4,  mt: `${NAVBAR_HEIGHT}px`,pt: 4, position: 'relative',zIndex: 1  /* Padding vertical */ }}>
-        <Outlet /> {/* Aquí se renderizan las páginas */}
+      <Container component="main" maxWidth="lg" sx={{ /* ... estilos main container ... */ }}>
+        <Outlet />
       </Container>
 
       <Footer />
 
-      {/* Modales de Autenticación */}
-      <LoginModal
-         open={loginOpen}
-         onClose={handleLoginClose}
-         onSwitchToRegister={switchToRegister} // Pasar función para cambiar
+      {/* Renderizar modal basado en el estado local */}
+      {/* Asegúrate de que CompleteProfileModal exista y se importe correctamente */}
+      <CompleteProfileModal
+         open={profileModalOpen}
+         onClose={handleProfileModalClose}
       />
-      <RegisterModal
-        open={registerOpen}
-        onClose={handleRegisterClose}
-        onSwitchToLogin={switchToLogin} // Pasar función para cambiar
-       />
     </Box>
   );
 };

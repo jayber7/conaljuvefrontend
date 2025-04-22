@@ -136,7 +136,7 @@ const UserManagement = () => {
         width: 150,
         type: 'string',
         // valueGetter opcional si quieres manejar casos null/undefined o mostrar código como fallback
-        valueGetter: (value, row) => {return `${row.location.departmentName  || ''}`;},
+        ///valueGetter: (value, row) => {return `${row.location.departmentName  || ''}`;},
         //valueGetter: (row) => row.location?.departmentName || row.location?.departmentCode || 'N/A',
     },
 

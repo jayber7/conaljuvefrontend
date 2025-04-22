@@ -9,7 +9,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 // LoginPage y RegisterPage serán Modales, no rutas dedicadas
 import CommitteePage from './pages/committees/CommitteePage'; // O importa cada uno: JuventudPage, ProfesionalesPage, etc.
-
+import CompleteProfileModal from './components/Auth/CompleteProfileModal';
 function App() {
   return (
     <Routes>
@@ -36,7 +36,19 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+        {/* --- NUEVA RUTA --- */}
+        {/* Esta ruta renderizará el placeholder, pero MainLayout
+            detectará !isProfileComplete y abrirá el modal */}
+        <Route
+          path="/completar-perfil"
+          element={
+             // Protegerla para que solo usuarios logueados puedan acceder
+             
+              <ProtectedRoute roles={['USER', 'STAFF', 'ADMIN']}>
+                  <CompleteProfileModal />
+              </ProtectedRoute>
+           }
+         />
         {/* Cualquier otra ruta */}
         <Route path="*" element={<NotFoundPage />} />
       </Route>

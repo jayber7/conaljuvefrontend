@@ -1,49 +1,46 @@
+// src/components/Auth/ProtectedRoute.jsx
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Box, CircularProgress } from '@mui/material';
 
-// const ProtectedRoute = ({ children, role }) => {
-//   const { isAuthenticated, isAdmin, loading } = useAuth();
-//   const location = useLocation();
-
-
-
-
-
-//   if (role && role === 'ADMIN' && !isAdmin) {
-//     console.log('ProtectedRoute: Not admin, redirecting to home...');
-//     // No tiene el rol requerido, redirige a la página principal
-//     return <Navigate to="/" replace />;
-//   }
-// --- MODIFICACIÓN: Aceptar 'roles' como array ---
-const ProtectedRoute = ({ children, roles }) => { // Cambiado 'role' por 'roles' (plural)
-  const { user, isAuthenticated, loading } = useAuth(); // Obtener el usuario completo
+const ProtectedRoute = ({ children, roles }) => {
+  // Obtener loading, isAuthenticated, y user del contexto
+  const { isAuthenticated, user, loading } = useAuth(); // <-- Asegúrate de obtener 'user' también
   const location = useLocation();
 
+  // --- PASO 1: MOSTRAR SPINNER MIENTRAS CARGA ---
   if (loading) {
-    // Muestra spinner mientras verifica el estado de auth
+    // Todavía estamos verificando la sesión/token inicial
+    console.log("ProtectedRoute: Auth context cargando..."); // Log de depuración
     return (
       <Box display="flex" justifyContent="center" alignItems="center" sx={{ minHeight: 'calc(100vh - 200px)' }}>
         <CircularProgress />
       </Box>
     );
   }
-  if (!isAuthenticated) {
-    console.log('ProtectedRoute: Not authenticated, redirecting to login...');
-    // Guarda la ruta a la que intentaba acceder para redirigir después del login
-    return <Navigate to="/" state={{ from: location, openLogin: true }} replace />; // Redirige a home y pide abrir login
-  }
+  // --- FIN PASO 1 ---
 
-  // --- MODIFICACIÓN: Verificar contra array de roles ---
-  // Si se especifican roles requeridos Y el rol del usuario NO está en la lista de roles permitidos
-  if (roles && roles.length > 0 && !roles.includes(user?.role)) {
-     console.warn(`ProtectedRoute: Acceso denegado. Requiere rol: ${roles.join(' o ')}. Usuario tiene: ${user?.role}`);
-     // No tiene el rol requerido -> redirigir a la página principal
-     return <Navigate to="/" replace />;
+  // --- PASO 2: VERIFICAR AUTENTICACIÓN (SOLO DESPUÉS DE CARGAR) ---
+  if (!isAuthenticated) {
+    // Ahora que loading es false, sabemos que realmente no está autenticado
+    console.log('ProtectedRoute: Auth cargado, NO autenticado. Redirigiendo...');
+    // Redirige a la página principal, pasando la intención de abrir login (aunque ya no exista el modal)
+    // Podrías quitar 'openLogin: true' si ya no usas esa lógica en MainLayout
+    return <Navigate to="/" state={{ from: location /*, openLogin: true*/ }} replace />;
   }
-  // --- FIN MODIFICACIÓN ---
-  // Si todo está bien, renderiza el componente hijo
+  // --- FIN PASO 2 ---
+
+  // --- PASO 3: VERIFICAR ROL (SI APLICA) ---
+  // Si está autenticado, verifica los roles requeridos
+  if (roles && roles.length > 0 && (!user || !roles.includes(user.role))) { // Verifica que user exista antes de acceder a user.role
+     console.warn(`ProtectedRoute: Acceso denegado. Requiere rol: ${roles.join(' o ')}. Usuario tiene: ${user?.role}`);
+     return <Navigate to="/" replace />; // Redirigir a inicio si el rol no es correcto
+  }
+  // --- FIN PASO 3 ---
+
+  // Si pasó todas las verificaciones (cargado, autenticado, rol correcto) -> Mostrar contenido protegido
+  console.log("ProtectedRoute: Acceso permitido.");
   return children;
 };
 

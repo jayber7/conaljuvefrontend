@@ -1,3 +1,4 @@
+// src/contexts/AuthContext.jsx
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import api from '../services/api';
 
@@ -5,94 +6,102 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Estado inicial de carga
+  const [loading, setLoading] = useState(true);
 
   const fetchUser = useCallback(async () => {
-    const token = localStorage.getItem('authToken');
+    console.log("AuthContext: Iniciando fetchUser...");
+    // Intentar obtener token JWT (si aún soportas login con JWT)
+    const token = localStorage.getItem('authToken'); // Leer token
     if (token) {
-       // Re-establecer header por si acaso se perdió en recarga
+       console.log("AuthContext: Token JWT encontrado, estableciendo header.");
        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-       try {
-           // Verifica el token con el backend y obtiene datos frescos
-           const response = await api.get('/auth/me');
-           setUser(response.data);
-       } catch (error) {
-           console.error("Error fetching user data:", error.response?.data?.message || error.message);
-           localStorage.removeItem('authToken');
-           delete api.defaults.headers.common['Authorization'];
-           setUser(null); // Asegura que el usuario quede como null
-       }
+    } else {
+         console.log("AuthContext: No se encontró token JWT en localStorage.");
+         // Asegurarse de que no quede un header viejo si el token se borró
+         delete api.defaults.headers.common['Authorization'];
     }
-    setLoading(false); // Termina la carga inicial
+
+    // --- MODIFICACIÓN: Intentar SIEMPRE llamar a /api/auth/me ---
+    // El backend determinará si está autenticado por sesión o por token (si protect lo maneja)
+    try {
+      console.log("AuthContext: Intentando fetch /api/auth/me...");
+      // IMPORTANTE: api (axios instance) debe estar configurado con withCredentials: true
+      // si dependes de cookies de sesión. Revisa tu src/services/api.js
+      const response = await api.get('/auth/me'); // Esta llamada enviará la cookie de sesión si existe
+      console.log("AuthContext: Respuesta de /api/auth/me:", response.data);
+      // Si la llamada es exitosa (200 OK), significa que está autenticado
+      setUser(response.data); // Establecer usuario (viene del backend)
+      console.log("AuthContext: Estado 'user' establecido.");
+
+      // Opcional: Si /me también devuelve un token (para unificar), guárdalo
+      // if (response.data.token) {
+      //    localStorage.setItem('authToken', response.data.token);
+      //    api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+      // }
+
+    } catch (error) {
+      // Si /api/auth/me falla (ej. 401), significa que no está autenticado
+      console.error("AuthContext: Error fetching /api/auth/me (probablemente no autenticado):", error.response?.status, error.response?.data?.message || error.message);
+      // Limpiar cualquier dato residual
+      localStorage.removeItem('authToken');
+      delete api.defaults.headers.common['Authorization'];
+      setUser(null); // Asegurar que user sea null
+    } finally {
+        console.log("AuthContext: fetchUser finalizado, setLoading(false).");
+        setLoading(false); // Terminar carga en cualquier caso
+    }
+    // --- FIN MODIFICACIÓN ---
   }, []);
 
 
   useEffect(() => {
-      console.log("AuthProvider mounted. Fetching user...");
+      console.log("AuthProvider mounted. Ejecutando fetchUser...");
       fetchUser();
-  }, [fetchUser]);
+  }, [fetchUser]); // fetchUser ya no cambia, pero mantener dependencia es buena práctica
 
-  const login = async (credentials) => {
-    try {
-        setLoading(true);
-        const response = await api.post('/auth/login', credentials);
-        const { token, ...userData } = response.data; // El backend debería devolver user + token
-        localStorage.setItem('authToken', token);
-        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        setUser(userData);
-        setLoading(false);
-        return { success: true, user: userData };
-    } catch (error) {
-        setLoading(false);
-        console.error("Login failed:", error.response?.data?.message || error.message);
-        // Devuelve el mensaje de error del backend si existe
-        throw new Error(error.response?.data?.message || 'Error al iniciar sesión');
-    }
-  };
+  // --- login (Basado en JWT - mantener si necesitas login con credenciales) ---
+  const login = async (credentials) => { /* ... como antes ... */ };
 
-  const register = async (userData) => {
-     try {
-        setLoading(true);
-        // Llama al endpoint de registro
-        await api.post('/auth/register', userData);
-        setLoading(false);
-        // Podrías hacer login automático aquí o simplemente mostrar éxito
-        return { success: true };
-     } catch (error) {
-         setLoading(false);
-         console.error("Registration failed:", error.response?.data?.message || error.message);
-         throw new Error(error.response?.data?.message || 'Error al registrarse');
-     }
-  };
+  // --- register (probablemente obsoleto si solo usas FB login) ---
+  // const register = async (userData) => { /* ... */ };
 
-  const logout = useCallback(() => {
+  // --- logout (Debe limpiar sesión del backend si es posible) ---
+  const logout = useCallback(async () => { // Hacerla async
     console.log("Logging out...");
-    localStorage.removeItem('authToken');
-    delete api.defaults.headers.common['Authorization'];
-    setUser(null);
-    // No forzar redirección aquí, dejar que los componentes decidan
-  }, []);
+    try {
+        // Llamar al endpoint de logout del backend para destruir la sesión
+        await api.post('/auth/logout');
+        console.log("Logout en backend exitoso.");
+    } catch (error) {
+        console.error("Error llamando a /auth/logout del backend:", error.response?.data?.message || error.message);
+        // Continuar con la limpieza del frontend de todos modos
+    } finally {
+        // Limpieza Frontend
+        localStorage.removeItem('authToken'); // Limpiar token si lo usas
+        delete api.defaults.headers.common['Authorization']; // Limpiar header
+        setUser(null); // Limpiar estado local
+        console.log("Estado local y token limpiados.");
+        // Considera redirigir aquí o en el componente que llamó a logout
+        // navigate('/');
+    }
+  }, []); // Añadir dependencias si usa algo externo (ej. navigate)
 
   const value = {
     user,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'ADMIN',
-    isStaff: user?.role === 'ADMIN' || user?.role === 'STAFF', // Staff también incluye Admin
-    loading, // Exportar estado de carga
-    login,
+    isStaff: user?.role === 'ADMIN' || user?.role === 'STAFF',
+    loading,
+    login, // Mantener si aún ofreces login JWT
     logout,
-    register,
-    refetchUser: fetchUser // Función para recargar datos del usuario si es necesario
+    // register, // Quitar si ya no se usa
+    refetchUser: fetchUser
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return ( <AuthContext.Provider value={value}> {children} </AuthContext.Provider> );
 };
 
-// Hook personalizado
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
    if (context === undefined) {

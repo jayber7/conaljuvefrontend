@@ -108,7 +108,7 @@ const CommitteePage = ({ committeeId }) => {
                 <Typography variant="h1" component="h1" gutterBottom align="center">
                     {data.title}
                 </Typography>
-                <Typography variant="h1" component="h1" gutterBottom align="center">
+                <Typography variant="h3" component="h3" gutterBottom align="justify">
                     {data.detail}
                 </Typography>
                 {/* Imagen */}
