@@ -12,6 +12,9 @@ import logoConaljuve from '../../assets/LogoCONALJUVE.png'; // Ajusta la extensi
 import pattern from '../../assets/pattern.png';
 import SearchIcon from '@mui/icons-material/Search'; // Icono de búsqueda
 import FacebookIcon from '@mui/icons-material/Facebook';
+import EditIcon from '@mui/icons-material/Edit';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber'; // Icono para advertencia
+import api from '../../services/api'; // <-- Añadir esta línea (asegúrate que la ruta sea correcta)
 
 const pages = [ // Elementos principales del menú
   { name: 'Inicio', path: '/' },
@@ -26,8 +29,8 @@ const committeePages = [
   { name: 'Aliados Estratégicos', path: '/comites/aliados' }, // O '/aliados-estrategicos' si prefieres ruta separada
 ];
 //const Navbar = ({ onLoginClick, onRegisterClick }) => {
-const Navbar = () => {
-  const { isAuthenticated, user, isAdmin, isStaff, logout } = useAuth();
+const Navbar = ({ onOpenProfileModal  /*, onLoginClick, onRegisterClick */ }) => {
+  const { isAuthenticated, refetchUser, user, isAdmin, isStaff, logout } = useAuth();
    // URL del endpoint de inicio de Facebook en el backend
   const facebookLoginUrl = `${import.meta.env.VITE_API_URL || '/api'}/auth/facebook`;
   console.log('⬇️ Navbar - isAuthenticated:', isAuthenticated, 'User:', user); // <-- DEBUG
@@ -108,12 +111,21 @@ const handleOpenCreateNewsModal = () => {
   handleCloseUserMenu(); // Cerrar menú de usuario
   // Lógica para abrir el modal:
   // Opción 1: Si el modal se controla en un nivel superior (ej. MainLayout o AdminPage)
-  if (onOpenNewsModal) { // Verifica si la prop existe
-       onOpenNewsModal(); // Llama a la función pasada como prop
+  if (onOpenProfileModal ) { // Verifica si la prop existe
+    onOpenProfileModal(); // Llama a la función pasada como prop
   } else {
       // Opción 2: Navegar a una ruta específica que abra el modal (menos directo)
       // navigate('/admin?openModal=true'); // Requeriría lógica en AdminPage para leer query param
       console.warn("Función para abrir modal de noticias no proporcionada a Navbar");
+  }
+};
+// Handler para abrir el modal desde el menú (llama a la prop)
+const handleOpenProfileModalClick = () => {
+  handleCloseUserMenu(); // Cerrar menú actual
+  if (onOpenProfileModal) {
+      onOpenProfileModal(); // Llamar a la función pasada desde MainLayout
+  } else {
+      console.warn("Navbar: onOpenProfileModal no fue proporcionado.");
   }
 };
 // --- FIN HANDLERS ---
@@ -142,6 +154,8 @@ const userInitials = getInitials(user?.name)
           color: 'secondary.main', // Color de acento al pasar el mouse
       }
   };
+  const navbarHeight = 64; // Altura real de tu AppBar
+  const logoHeight = 80;   // Altura total del logo
   return (
      // --- MODIFICACIÓN: Añadir estilos de fondo al AppBar ---
      <AppBar
@@ -167,6 +181,7 @@ const userInitials = getInitials(user?.name)
          // Asegurarse que el contenido esté por encima del overlay
           backgroundImage: 'url(${pattern})', // Si usas imagen
           backgroundRepeat: 'repeat',
+          height: `${navbarHeight}px`,
           //background: 'linear-gradient(rgba(30,30,30,0.95), rgba(50,50,50,0.98)), url("data:image/svg+xml,%3Csvg width=\'6\' height=\'6\' viewBox=\'0 0 6 6\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23555555\' fill-opacity=\'0.1\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M5 0h1L0 6V5zM6 5v1H5z\'/%3E%3C/g%3E%3C/svg%3E")', // Ejemplo pattern CSS
           color: '#ffffff', // Cambiar color de texto a blanco para contraste
           '& .MuiToolbar-root, & .MuiContainer-root': { // Aplicar a Toolbar y Container dentro del AppBar
@@ -188,6 +203,7 @@ const userInitials = getInitials(user?.name)
             component={RouterLink}
             to="/"
             sx={{
+              height: `${navbarHeight + (logoHeight - navbarHeight) / 2}px`,
               position: { xs:'relative', md: 'absolute' }, // Relativo en móvil, absoluto en desktop
               left: { xs: 0, md: '-10px' }, // Desplazado a la izquierda en desktop
               top: { xs: 0, md: '-15px' }, // Desplazado hacia arriba en desktop
@@ -255,12 +271,13 @@ const userInitials = getInitials(user?.name)
               transformOrigin={{ vertical: 'top', horizontal: 'left' }}
               open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
-              sx={{ display: { xs: 'block', md: 'none' } }}
+              // sx={{ display: { xs: 'block', md: 'none' } }}
+              sx={{ ...menuLinkStyle, py: 1 }} 
             >
                {/* Pages Principales */}
               {pages.map((page) => (
                 <MenuItem key={page.name} onClick={() => handleNavigate(page.path)}>
-                  <Typography textAlign="center">{page.name}</Typography>
+                  <Typography  textAlign="center">{page.name}</Typography>
                 </MenuItem>
               ))}
               {/* Separador y Comités */}
@@ -316,7 +333,8 @@ const userInitials = getInitials(user?.name)
             {/* Botón Comités con Menú Desplegable */}
             <Button
                             onClick={handleOpenCommitteesMenu}
-                            sx={{ my: 2, color: 'white', display: 'block', mx: 1.5, fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.9rem' }}
+                            // sx={{ my: 2, color: 'white', display: 'block', mx: 1.5, fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.9rem' }}
+                            sx={{ ...menuLinkStyle, py: 1 }} // <-- Aplicar estilo y ajustar padding
                             endIcon={<KeyboardArrowDownIcon />} // Icono flecha abajo
                             aria-controls={anchorElCommittees ? 'committees-menu' : undefined}
                             aria-haspopup="true"
@@ -376,6 +394,21 @@ const userInitials = getInitials(user?.name)
                     <Typography variant="body2">Hola, {user?.name || user?.username}</Typography>
                   </MenuItem>
                   <Divider />
+                   {/* --- MENU ITEMS CONDICIONALES --- */}
+
+                    {/* Opción Completar Perfil (si está incompleto) */}
+                    {!user.isProfileComplete && (
+                        <MenuItem onClick={handleOpenProfileModalClick}>
+                            <WarningAmberIcon sx={{ mr: 1, color: 'warning.main' }} fontSize="small"/> Completar Perfil
+                        </MenuItem>
+                    )}
+
+                     {/* Opción Editar Perfil (si está completo) */}
+                     {user.isProfileComplete && (
+                        <MenuItem onClick={handleOpenProfileModalClick}>
+                             <EditIcon sx={{ mr: 1 }} fontSize="small"/> Editar Perfil
+                         </MenuItem>
+                     )}
                   {/* <MenuItem onClick={() => handleNavigate('/perfil')}>Perfil</MenuItem> */}
                   {(isAdmin || isStaff) && (
                     <>
