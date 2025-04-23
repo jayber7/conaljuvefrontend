@@ -10,6 +10,8 @@ import ProtectedRoute from './components/Auth/ProtectedRoute';
 // LoginPage y RegisterPage serán Modales, no rutas dedicadas
 import CommitteePage from './pages/committees/CommitteePage'; // O importa cada uno: JuventudPage, ProfesionalesPage, etc.
 import CompleteProfileModal from './components/Auth/CompleteProfileModal';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'; // Ajusta ruta si es necesario
+import TermsOfServicePage from './pages/TermsOfServicePage'; // Ajusta ruta
 function App() {
   return (
     <Routes>
@@ -49,6 +51,8 @@ function App() {
               </ProtectedRoute>
            }
          />
+        <Route path="/politica-privacidad" element={<PrivacyPolicyPage />} />
+        <Route path="/terminos-servicio" element={<TermsOfServicePage />} />
         {/* Cualquier otra ruta */}
         <Route path="*" element={<NotFoundPage />} />
       </Route>

@@ -18,7 +18,22 @@ const Footer = () => {
         { icon: <FaTiktok size="1.5em"/>, href: 'https://www.tiktok.com/', 'aria-label': 'TikTok' }, // Reemplazar con enlace real si existe
         { icon: <WhatsAppIcon />, href: 'https://wa.me/NUMERO_WHATSAPP', 'aria-label': 'WhatsApp' }, // Reemplazar con enlace real
     ];
-
+    function Copyright() {
+        return (
+            <Typography variant="body2" align="center">
+                 <Link component={RouterLink} to="/politica-privacidad" color="inherit" sx={{ mx: 1 }}>
+                    Política de Privacidad
+                 </Link>
+                 {' | '}
+                 <Link component={RouterLink} to="/terminos-servicio" color="inherit" sx={{ mx: 1 }}>
+                     Términos de Servicio
+                 </Link>
+                 <br /> {/* Salto de línea */}
+                {'Copyright © '}
+                {/* ... resto del copyright ... */}
+            </Typography>
+        );
+    }
     return (
         <Box
             component="footer"
@@ -117,6 +132,7 @@ const Footer = () => {
                 <Typography variant="body2" align="center" sx={{ mt: 5, pt: 2, borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
                     {'Copyright © '}
                     <Link color="inherit" href="#">CONALJUVE Bolivia</Link>{' '}
+                    <Copyright/>
                     {new Date().getFullYear()}
                     {'. Todos los derechos reservados.'}
                 </Typography>
