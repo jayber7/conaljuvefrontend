@@ -7,15 +7,15 @@ import { es } from 'date-fns/locale'; // Para formato en español
 // Placeholder si no hay imagen
 const placeholderImage = 'https://via.placeholder.com/600x400?text=Noticia';
 
-const NewsCard = ({ article }) => {
+const NewsCard = ({ article, elevation = 1  }) => {
   const formattedDate = article.publicationDate
     ? format(new Date(article.publicationDate), 'dd MMMM, yyyy', { locale: es })
     : 'Fecha desconocida';
  
 
   return (
-    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <CardActionArea component={RouterLink} to={`/noticia/${article._id}`}>
+    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }} elevation={elevation}>
+      <CardActionArea component={RouterLink} to={`/noticia/${article._id}`} sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
         <CardMedia
           component="img"
           height="200" // Altura fija para la imagen
@@ -23,7 +23,7 @@ const NewsCard = ({ article }) => {
           alt={article.title}
           sx={{ objectFit: 'cover' }} // Para que la imagen cubra el espacio
         />
-        <CardContent sx={{ flexGrow: 1 }}> {/* Para que el contenido ocupe espacio */}
+        <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', width: '100%' }}> {/* Para que el contenido ocupe espacio */}
           <Typography gutterBottom variant="h6" component="div" sx={{
              display: '-webkit-box',
              overflow: 'hidden',
@@ -45,10 +45,9 @@ const NewsCard = ({ article }) => {
           }}>
             {article.summary}
           </Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
-              <Typography variant="caption" color="text.secondary">
-                  {formattedDate}
-                  
+          <Box  sx={{ mt: 'auto', pt: 1 }}>
+              <Typography variant="caption" color="text.secondary" display="block" sx={{ textAlign: 'right' }}>
+                  {formattedDate}                  
               </Typography>
               
               {/* Podrías añadir autor o tags aquí si quieres */}

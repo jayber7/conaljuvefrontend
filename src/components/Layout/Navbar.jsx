@@ -9,12 +9,15 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import MenuIcon from '@mui/icons-material/Menu';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import logoConaljuve from '../../assets/LogoCONALJUVE.png'; // Ajusta la extensión (.png, .jpg, .svg)
-import pattern from '../../assets/pattern.png';
 import SearchIcon from '@mui/icons-material/Search'; // Icono de búsqueda
 import FacebookIcon from '@mui/icons-material/Facebook';
 import EditIcon from '@mui/icons-material/Edit';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'; // Icono para advertencia
 import api from '../../services/api'; // <-- Añadir esta línea (asegúrate que la ruta sea correcta)
+import { useGoogleLogin } from '@react-oauth/google';
+import GoogleIcon from '@mui/icons-material/Google'; // Icono de Google
+
+
 
 const pages = [ // Elementos principales del menú
   { name: 'Inicio', path: '/' },
@@ -128,6 +131,82 @@ const handleOpenProfileModalClick = () => {
       console.warn("Navbar: onOpenProfileModal no fue proporcionado.");
   }
 };
+// --- Lógica Google Login ---
+const handleGoogleLogin = () => {
+  const popup = window.open(/*...*/);
+  let intervalId = null; // Para guardar ID del intervalo
+
+  const handleAuthMessage = async (event) => {
+      // ... (verificar origen) ...
+      if (event.data?.type === 'auth-success' && event.data?.payload) {
+          // ... (guardar token, refetchUser) ...
+          // --- CERRAR POPUP DESDE AQUÍ ---
+          if (popup && !popup.closed) {
+              popup.close();
+          }
+          // --- FIN CERRAR ---
+          window.removeEventListener('message', handleAuthMessage);
+          if (intervalId) clearInterval(intervalId); // Limpiar intervalo
+      } else if (event.data?.type === 'auth-error') {
+          // ... (manejar error) ...
+           if (popup && !popup.closed) popup.close(); // Cerrar también en error
+           window.removeEventListener('message', handleAuthMessage);
+           if (intervalId) clearInterval(intervalId);
+      }
+  };
+  window.addEventListener('message', handleAuthMessage);
+
+  // Quitar el intervalo que solo chequeaba si estaba cerrado
+  // intervalId = setInterval(() => { ... });
+};
+const handleGoogleLoginSuccess = async (googleResponse) => {
+  console.log('Google Login Success:', googleResponse);
+  // googleResponse contiene 'code' para flujo de autorización
+  // o 'access_token'/'id_token' para flujo implícito.
+  // Para mayor seguridad, usaremos el flujo de autorización (code)
+  // si está configurado, o verificaremos el access_token/id_token en el backend.
+
+  // --- ENFOQUE: Enviar 'code' al backend para obtener token propio ---
+  // Este es el flujo más seguro recomendado por Google
+  if (googleResponse.code) {
+       console.log("Enviando código de autorización de Google al backend...");
+       try {
+           // NECESITAS UN NUEVO ENDPOINT EN EL BACKEND: POST /api/auth/google/verify-code
+           const { data } = await api.post('/auth/google/verify-code', { code: googleResponse.code });
+
+           console.log("Respuesta del backend (verify-code):", data);
+           if (data.token && data.user) {
+               localStorage.setItem('authToken', data.token);
+               api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+               await refetchUser(); // Recargar datos con el nuevo token/sesión establecida
+           } else {
+                console.error("El backend no devolvió token/usuario después de verificar código.");
+                alert("Error al procesar inicio de sesión con Google (BE).");
+           }
+       } catch (error) {
+            console.error("Error enviando código de Google al backend:", error.response?.data || error);
+            alert(`Error al iniciar sesión con Google: ${error.response?.data?.message || 'Error de servidor'}`);
+       }
+
+  } else {
+      console.warn("Flujo de código de Google no detectado, revisa la configuración de useGoogleLogin.");
+       alert("Error inesperado durante el inicio de sesión con Google.");
+  }
+};
+
+const handleGoogleLoginError = (error) => {
+  console.error('Google Login Failed:', error);
+  alert('Inicio de sesión con Google falló.');
+};
+
+const googleLogin = useGoogleLogin({
+  // --- Usar Flujo de Código (Authorization Code Flow) ---
+  flow: 'auth-code', // Más seguro que 'implicit'
+  onSuccess: handleGoogleLoginSuccess,
+  onError: handleGoogleLoginError,
+  // ux_mode: 'popup', // Puedes forzar popup si prefieres sobre redirect
+});
+// --- Fin Lógica Google Login ---
 // --- FIN HANDLERS ---
   // Determinar las iniciales como fallback
   const getInitials = (name) => {
@@ -154,9 +233,10 @@ const userInitials = getInitials(user?.name)
           color: 'secondary.main', // Color de acento al pasar el mouse
       }
   };
+
   const navbarHeight = 64; // Altura real de tu AppBar
   const logoHeight = 80;   // Altura total del logo
-  return (
+return (
      // --- MODIFICACIÓN: Añadir estilos de fondo al AppBar ---
      <AppBar
      position="fixed"
@@ -179,7 +259,7 @@ const userInitials = getInitials(user?.name)
         //      zIndex: 0, // Detrás del contenido
         //  },
          // Asegurarse que el contenido esté por encima del overlay
-          backgroundImage: 'url(${pattern})', // Si usas imagen
+         backgroundImage: `url('/assets/patterns/pattern.png')`,  // Si usas imagen
           backgroundRepeat: 'repeat',
           height: `${navbarHeight}px`,
           //background: 'linear-gradient(rgba(30,30,30,0.95), rgba(50,50,50,0.98)), url("data:image/svg+xml,%3Csvg width=\'6\' height=\'6\' viewBox=\'0 0 6 6\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23555555\' fill-opacity=\'0.1\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M5 0h1L0 6V5zM6 5v1H5z\'/%3E%3C/g%3E%3C/svg%3E")', // Ejemplo pattern CSS
@@ -193,7 +273,7 @@ const userInitials = getInitials(user?.name)
           '& .MuiIconButton-root': { color: '#ffffff' },
      }}
  >
- {/* --- FIN MODIFICACIÓN --- */}
+ 
       <Container maxWidth="lg" sx={{ height: '100%' }}> {/* Controla el ancho máximo */}
         <Toolbar disableGutters sx={{ height: '100%', position: 'relative', minHeight: {xs: 56, md: 70} }}> {/* Altura mínima y posición relativa */}
 
@@ -208,7 +288,7 @@ const userInitials = getInitials(user?.name)
               left: { xs: 0, md: '-10px' }, // Desplazado a la izquierda en desktop
               top: { xs: 0, md: '-15px' }, // Desplazado hacia arriba en desktop
               zIndex: 1301, // Encima del AppBar y otros elementos
-              bgcolor: 'background.paper', // Fondo blanco para el logo
+              
               p: { xs: 0.5, md: 1 }, // Padding alrededor del logo
               borderRadius: '4px', // Bordes redondeados
               boxShadow: '0px 4px 8px rgba(0,0,0,0.2)', // Sombra para destacar
@@ -432,22 +512,32 @@ const userInitials = getInitials(user?.name)
               //     Registrarse
               //   </Button>
               // </Box>
-              // --- BOTÓN FACEBOOK LOGIN ---
-              <Button
+            //   // --- BOTÓN FACEBOOK LOGIN ---
+            //   <Button
+            //     variant="contained"
+            //     color="primary" // O un color azul de Facebook
+            //     startIcon={<FacebookIcon />}
+            //     onClick={handleFacebookLogin} // <-- LLAMAR AL HANDLER DEL POPUP
+            //     //href={facebookLoginUrl} // Enlace directo al backend
+            //     // Quitar rel="noopener noreferrer" si es del mismo origen base
+            //     // (aunque no hace daño)
+            //     sx={{
+            //         // Estilos opcionales para el botón de FB
+            //         // backgroundColor: '#1877F2',
+            //         // '&:hover': { backgroundColor: '#166FE5' }
+            //     }}
+            //   >
+            //     Acceder con Facebook
+            //  </Button>
+          // --- BOTÓN GOOGLE LOGIN ---
+          <Button
               variant="contained"
-              color="primary" // O un color azul de Facebook
-              startIcon={<FacebookIcon />}
-              onClick={handleFacebookLogin} // <-- LLAMAR AL HANDLER DEL POPUP
-              //href={facebookLoginUrl} // Enlace directo al backend
-              // Quitar rel="noopener noreferrer" si es del mismo origen base
-              // (aunque no hace daño)
-              sx={{
-                  // Estilos opcionales para el botón de FB
-                  // backgroundColor: '#1877F2',
-                  // '&:hover': { backgroundColor: '#166FE5' }
-              }}
+              color="primary" // Puedes darle estilo específico
+              sx={{ bgcolor: 'blue', color: '#444', '&:hover': { bgcolor: 'black'} }} // Estilo Google
+              startIcon={<GoogleIcon />}
+              onClick={() => googleLogin()} // Llamar al hook para iniciar flujo
           >
-              Acceder con Facebook
+          Acceder con Google
           </Button>
             )}
           </Box>

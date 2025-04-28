@@ -4,13 +4,17 @@ import { useForm, Controller } from 'react-hook-form';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField,
+  Dialog, Menu, DialogTitle, DialogContent, DialogActions, Button, TextField,
   Box, CircularProgress, Alert, Grid, Select, MenuItem, InputLabel, FormControl,
-  Input, Avatar, Typography, Paper, Link, FormHelperText // Importar FormHelperText para errores de Select
+  Input, Avatar, Typography, Paper, Tooltip, IconButton, Divider, Link, FormHelperText // Importar FormHelperText para errores de Select
 } from '@mui/material';
 import PhotoCamera from '@mui/icons-material/PhotoCamera'; // Icono para subir foto
 import PersonIcon from '@mui/icons-material/Person';
+import EditIcon from '@mui/icons-material/Edit'
+import UploadFileIcon from '@mui/icons-material/UploadFile'; // Para botón de subir archivo
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import DeleteIcon from '@mui/icons-material/Delete'; // Para quitar foto
+
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3'; // Adapter para DatePicker
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -21,9 +25,11 @@ import CloseIcon from '@mui/icons-material/Close'; // Icono para cerrar cámara
 import SwitchCameraIcon from '@mui/icons-material/SwitchCamera'; // Icono para cambiar cámara (avanzado)
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable'; // Para tablas en PDF (opcional)
+import CameraModal from './CameraModal'; // <-- IMPORTAR MODAL CÁMARA
 
 const CompleteProfileModal  = ({ open, onClose }) => {
   const { user, refetchUser } = useAuth(); // Obtener usuario actual y función para recargar datos
+  const [isEditingName, setIsEditingName] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -34,6 +40,8 @@ const CompleteProfileModal  = ({ open, onClose }) => {
   const [profilePicPreview, setProfilePicPreview] = useState(null); // Estado para previsualización
   const fileInputRef = useRef(null); // Ref para el input file oculto
 // --- ESTADOS PARA LA CÁMARA ---
+const [cameraModalOpen, setCameraModalOpen] = useState(false); // Estado para modal cámara
+const [anchorElPhotoMenu, setAnchorElPhotoMenu] = useState(null); // Estado para menú de avatar
 const [isCameraOpen, setIsCameraOpen] = useState(false);
 const [cameraError, setCameraError] = useState('');
 const [cameraStream, setCameraStream] = useState(null);
@@ -41,7 +49,7 @@ const videoRef = useRef(null); // Ref para el elemento <video>
 const canvasRef = useRef(null); // Ref para el <canvas> oculto
 // --- FIN ESTADOS CÁMARA ---
 const [pdfData, setPdfData] = useState(null); // Estado para guardar datos del PDF
-  const { register, handleSubmit, control, watch, setValue, reset, formState: { errors } } = useForm({
+const { register, handleSubmit, control, watch, setValue, reset, formState: { errors, isDirty } } = useForm({
       defaultValues: {
           name: '',
         //   username: '',
@@ -59,6 +67,67 @@ const [pdfData, setPdfData] = useState(null); // Estado para guardar datos del P
   });
   // --- Lógica de Cámara ---
 
+  // --- useEffect para limpiar preview al cerrar ---
+  useEffect(() => {
+    if (!open) {
+        setProfilePicPreview(null); // Limpiar previsualización al cerrar modal principal
+        setIsEditingName(false);
+    }
+ }, [open]);
+
+// --- Handlers para Menú de Avatar ---
+const handlePhotoMenuOpen = (event) => {
+    setAnchorElPhotoMenu(event.currentTarget);
+};
+const handlePhotoMenuClose = () => {
+    setAnchorElPhotoMenu(null);
+};
+
+// --- Handler para Input File (se activa desde menú) ---
+const handleUploadClick = () => {
+    handlePhotoMenuClose(); // Cerrar menú
+    fileInputRef.current?.click(); // Abrir selector de archivo
+};
+const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => { setProfilePicPreview(reader.result); };
+        reader.readAsDataURL(file);
+        setValue('profilePicture', file, { shouldDirty: true }); // Marcar como dirty
+    }
+};
+// --- Fin Handler Input File ---
+
+// --- Handlers para Cámara Modal ---
+const handleOpenCameraModal = () => {
+    handlePhotoMenuClose(); // Cerrar menú
+    setProfilePicPreview(null); // Limpiar preview de archivo si había
+    setValue('profilePicture', null);
+    setCameraModalOpen(true); // Abrir modal cámara
+};
+const handleCloseCameraModal = () => {
+    setCameraModalOpen(false);
+};
+const handlePictureTaken = (pictureFile) => {
+    // Recibe el archivo desde CameraModal
+    if (pictureFile) {
+         setValue('profilePicture', pictureFile, { shouldDirty: true }); // Guardar en RHF y marcar dirty
+         // Mostrar previsualización
+         setProfilePicPreview(URL.createObjectURL(pictureFile));
+    }
+    // CameraModal se cierra solo después de llamar a onPictureTaken
+};
+ // --- Handler para quitar foto ---
+ const handleRemovePicture = () => {
+     handlePhotoMenuClose();
+     setProfilePicPreview(null);
+     setValue('profilePicture', null, { shouldDirty: true });
+     // ¿Necesitas enviar algo al backend para borrar la URL existente?
+     // Si es así, necesitarías manejar un estado adicional o un campo especial en el submit.
+     // Por ahora, solo limpia la nueva foto/preview. La foto existente en 'user' se mantiene.
+ };
+// --- Fin Handlers Cámara ---
     // Función para detener el stream actual
     const stopCameraStream = useCallback(() => {
       if (cameraStream) {
@@ -147,34 +216,34 @@ const [pdfData, setPdfData] = useState(null); // Estado para guardar datos del P
   }, [stopCameraStream, open]); // Asegurarse de detener si 'open' cambia a false
 
   // --- Fin Lógica Cámara ---
-  // --- Manejo de Selección de Archivo ---
-    const handleFileChange = (event) => {
-        stopCameraStream(); // Detener cámara si estaba abierta
-        setIsCameraOpen(false);
-        const file = event.target.files[0];
-        if (file) {
-            // Previsualización (opcional)
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                console.log("FileReader onloadend:", reader.result ? 'Data URL generado' : 'Sin resultado'); // DEBUG
-                setProfilePicPreview(reader.result); // <-- Actualiza la previsualización
-            };
-            reader.onerror = (error) => { // DEBUG
-                console.error("FileReader Error:", error);
-                setError("Error al leer el archivo de imagen.");
-                setProfilePicPreview(null);
-           };
-            reader.readAsDataURL(file);
+//   // --- Manejo de Selección de Archivo ---
+//     const handleFileChange = (event) => {
+//         stopCameraStream(); // Detener cámara si estaba abierta
+//         setIsCameraOpen(false);
+//         const file = event.target.files[0];
+//         if (file) {
+//             // Previsualización (opcional)
+//             const reader = new FileReader();
+//             reader.onloadend = () => {
+//                 console.log("FileReader onloadend:", reader.result ? 'Data URL generado' : 'Sin resultado'); // DEBUG
+//                 setProfilePicPreview(reader.result); // <-- Actualiza la previsualización
+//             };
+//             reader.onerror = (error) => { // DEBUG
+//                 console.error("FileReader Error:", error);
+//                 setError("Error al leer el archivo de imagen.");
+//                 setProfilePicPreview(null);
+//            };
+//             reader.readAsDataURL(file);
             
-            // Guardar el archivo en el estado del formulario (o manejarlo al submit)
-            // register('profilePicture').onChange(event); // O usar setValue
-            setValue('profilePicture', file); // <-- Guarda el archivo en RHF
-        } else {
-            setProfilePicPreview(null);
-            setValue('profilePicture', null);
-        }
-    };
-    // --- Fin Manejo de Archivo --
+//             // Guardar el archivo en el estado del formulario (o manejarlo al submit)
+//             // register('profilePicture').onChange(event); // O usar setValue
+//             setValue('profilePicture', file); // <-- Guarda el archivo en RHF
+//         } else {
+//             setProfilePicPreview(null);
+//             setValue('profilePicture', null);
+//         }
+//     };
+//     // --- Fin Manejo de Archivo --
   // --- MODIFICACIÓN: Observar los códigos ---
   const selectedDepartmentCode = watch('location.departmentCode');
   const selectedProvinceCode = watch('location.provinceCode');
@@ -331,54 +400,6 @@ useEffect(() => {
     setLoading(true); setError(''); setSuccess(false); setPdfData(null); // Resetear PDF data
     
 
-    //const formData = new FormData();
-    
-    // // --- MODIFICACIÓN: Asegurar que location tenga códigos numéricos ---
-    // const { confirmPassword, ...rest } = data;
-    // const userData = {
-    //     ...rest,
-    //     location: {
-    //         departmentCode: rest.location.departmentCode ? Number(rest.location.departmentCode) : undefined,
-    //         provinceCode: rest.location.provinceCode ? Number(rest.location.provinceCode) : undefined,
-    //         municipalityCode: rest.location.municipalityCode ? Number(rest.location.municipalityCode) : undefined,
-    //         zone: rest.location.zone || undefined,
-    //     },
-    //     // --- MODIFICACIÓN: Formatear nuevos campos ---
-    //       // DatePicker devuelve objeto Date o null, el backend espera ISO String o Date
-    //       birthDate: rest.birthDate ? rest.birthDate.toISOString().split('T')[0] : undefined, // Enviar solo YYYY-MM-DD
-    //       // Convertir el valor del Select de género a booleano o undefined
-    //       gender: rest.gender === 'male' ? true : (rest.gender === 'female' ? false : undefined),
-    //       profilePictureUrl: rest.profilePictureUrl || undefined, // Enviar si no está vacío
-    //       idCard: rest.idCard || undefined,
-    //       phoneNumber: rest.phoneNumber || undefined,
-    //       // --- FIN MODIFICACIÓN ---
-    // };
-    //  Object.keys(userData).forEach(key => userData[key] === undefined && delete userData[key]);
-    //  Object.keys(userData.location).forEach(key => userData.location[key] === undefined && delete userData.location[key]);
-    // // --- FIN MODIFICACIÓN ---
-    // formData.append('name', data.name);
-    //     formData.append('username', data.username);
-    //     formData.append('email', data.email);
-    //     formData.append('password', data.password);
-    //     // No añadir confirmPassword
-    //     if (data.birthDate) formData.append('birthDate', data.birthDate.toISOString().split('T')[0]);
-    //     const genderValue = data.gender === 'male' ? true : (data.gender === 'female' ? false : undefined);
-    //     if (genderValue !== undefined) formData.append('gender', genderValue); // Enviar true/false como string
-    //     if (data.idCard) formData.append('idCard', data.idCard);
-    //     if (data.idCardExtension) formData.append('idCardExtension', data.idCardExtension); // Ya debería estar en mayúsculas por el Select/Input
-    //     if (data.phoneNumber) formData.append('phoneNumber', data.phoneNumber);
-
-    //     // Añadir campos de ubicación (asegurarse que son números si no están vacíos)
-    //     if (data.location.departmentCode) formData.append('location[departmentCode]', Number(data.location.departmentCode));
-    //     if (data.location.provinceCode) formData.append('location[provinceCode]', Number(data.location.provinceCode));
-    //     if (data.location.municipalityCode) formData.append('location[municipalityCode]', Number(data.location.municipalityCode));
-    //     if (data.location.zone) formData.append('location[zone]', data.location.zone);
-
-    //     // Añadir el archivo de imagen SI existe
-    //     if (data.profilePicture) {
-    //         formData.append('profilePicture', data.profilePicture); // 'profilePicture' debe coincidir con upload.single()
-    //     }
-        // --- FIN MODIFICACIÓN ---
     const profileData = {
              name: data.name,
              location: {
@@ -403,20 +424,7 @@ useEffect(() => {
         await refetchUser(); // Recargar datos del usuario en el contexto
         const timer = setTimeout(() => { onClose(); }, 2000); // Cerrar después de éxito
         return () => clearTimeout(timer);
-      // --- GUARDAR DATOS PARA PDF (SIN la contraseña ni el archivo) ---
-    //   const dataForPdf = {
-    //     name: data.name, username: data.username, email: data.email,
-    //     birthDate: data.birthDate ? data.birthDate.toLocaleDateString('es-ES') : 'No especificada', // Formatear fecha
-    //     gender: data.gender === 'male' ? 'Varón' : (data.gender === 'female' ? 'Mujer' : 'No especificado'),
-    //     idCard: data.idCard || 'No especificado',
-    //     phoneNumber: data.phoneNumber || 'No especificado',
-    //     // Obtener nombres de ubicación (necesitas tenerlos en estado o buscarlos)
-    //     departmentName: departments.find(d => d.code == data.location.departmentCode)?.name || `Código ${data.location.departmentCode || 'N/A'}`,
-    //     provinceName: provinces.find(p => p.code == data.location.provinceCode)?.name || `Código ${data.location.provinceCode || 'N/A'}`,
-    //     municipalityName: municipalities.find(m => m.code == data.location.municipalityCode)?.name || `Código ${data.location.municipalityCode || 'N/A'}`,
-    //     zone: data.location.zone || 'No especificada',
-    //     registrationDate: new Date().toLocaleString('es-ES') // Fecha/hora del registro
-    // };
+   
    setPdfData(dataForPdf);
    // --- FIN GUARDAR DATOS ---
    reset();
@@ -497,13 +505,81 @@ const generatePdf = () => {
     doc.save(`registro_conaljuve_${pdfData.username}.pdf`);
 };
 // --- Fin Generar PDF ---
+ // Variable para saber qué imagen mostrar en el Avatar principal
+ const displayImageUrl = profilePicPreview || user?.profilePictureUrl || undefined;
+ // --- DEFINICIÓN DE ESTILOS ---
+const styles = {
+    dialogContent: {
+        bgcolor: 'grey.50',
+        p: { xs: 2, sm: 3 }
+    },
+    paperSection: {
+        p: 2.5,
+        mb: 3,
+        // variant: 'outlined' // No se puede poner variant aquí, se pone en el componente
+    },
+    sectionTitle: {
+        // mb: 2 // O usar gutterBottom en Typography
+    },
+    avatarContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        mb: 2.5,
+        gap: 1
+    },
+    profileAvatar: {
+        width: 60,
+        height: 60,
+        cursor: 'pointer',
+        bgcolor: 'grey.300'
+    },
+    profileAvatarIcon: {
+        fontSize: 30
+    },
+    nameEditContainer: {
+        flexGrow: 1,
+        ml: 1
+    },
+    nameEditFieldBox: {
+        display: 'flex',
+        alignItems: 'center'
+    },
+    nameTextField: {
+        flexGrow: 1,
+        '.MuiInputBase-input': { fontWeight: 500, fontSize: '1rem' }
+    },
+    editNameButton: {
+        ml: 0.5
+    },
+    locationPaper: { // Estilo específico para ubicación si es necesario
+         p: 2.5
+    },
+    photoPaper: { // Estilo específico para foto
+         p: 2.5,
+         mb: 3
+    },
+    photoBox: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'stretch', // Cambiado para que botones ocupen ancho
+        gap: 1.5,
+        mt: 1
+    },
+    // Puedes añadir más estilos reutilizables aquí...
+    smallFormControl: { // Ejemplo
+        // ...
+    },
+    smallTextField: { // Ejemplo
+         // ...
+    }
+};
+// --- FIN DEFINICIÓN DE ESTILOS ---
   return (
-    <Alert>si</Alert>,
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth> {/* Aumentado a lg */}
-        <DialogTitle sx={{ borderBottom: 1, borderColor: 'divider' }}>{user?.isProfileComplete ? 'Actualizar Perfil' : 'Completa tu Perfil'}</DialogTitle>
-        <form onSubmit={handleSubmit(onSubmit)} >
-            <DialogContent sx={{ bgcolor: 'grey.50', p: { xs: 2, sm: 3 } }}>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth scroll="paper"> {/* Aumentado a lg */}
+        <DialogTitle sx={{ borderBottom: 1, borderColor: 'divider', pb: 1 }}>{user?.isProfileComplete ? 'Actualizar Perfil' : 'Completa tu Perfil'}</DialogTitle>
+        <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
+            <DialogContent sx={styles.dialogContent}>
             {success && <Alert severity="success" sx={{ mb: 2 }}>¡Perfil actualizado con éxito!</Alert>}
                 {/* Mensaje de Éxito con Botón PDF */}
                 {success && (
@@ -527,117 +603,102 @@ const generatePdf = () => {
 
                 {/* Ocultar formulario si hubo éxito */}
                 {!success && (
-                    <Grid container spacing={3}> {/* Grid principal */}
+                <Grid container spacing={3}> {/* Grid principal */}
+                  {/* Columna Izquierda: Datos Personales */}
+                  <Grid item xs={12} md={6}>
+                                    <Paper sx={styles.paperSection} variant="outlined">
+                                        <Typography variant="h6" gutterBottom sx={styles.sectionTitle}> Datos Personales</Typography>
 
-                        {/* Columna Izquierda: Datos Personales y Cuenta */}
-                        <Grid item xs={12} md={7}>
-                            <Paper sx={{ p: 2.5, mb: 3 }} variant="outlined">
-                                <Typography variant="h6" gutterBottom>Datos Personales</Typography>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Nombre Completo*" {...register("name", { required: true })} error={!!errors.name} helperText={errors.name?.message} disabled={loading}/> </Grid>
-                                    <Grid item xs={12} sm={6}><Controller name="birthDate" control={control} render={({ field }) => (<DatePicker slotProps={{ textField: { fullWidth: true, size: 'small', error: !!errors.birthDate, helperText: errors.birthDate?.message } }} label="Fecha Nacimiento" {...field} value={field.value || null} disabled={loading} disableFuture/> )}/> </Grid>
-                                    <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Carnet Identidad" {...register("idCard")} error={!!errors.idCard} helperText={errors.idCard?.message} disabled={loading}/> </Grid>
-                                    <Grid item xs={12} sm={6}><FormControl fullWidth size="small" error={!!errors.gender} disabled={loading}><InputLabel>Género</InputLabel><Controller name="gender" control={control} render={({ field }) => (<Select label="Género" {...field}><MenuItem value=""><em>(Opcional)</em></MenuItem><MenuItem value="male">Varón</MenuItem><MenuItem value="female">Mujer</MenuItem></Select>)} /></FormControl> </Grid>
-                                    <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Número Celular" {...register("phoneNumber")} error={!!errors.phoneNumber} helperText={errors.phoneNumber?.message} disabled={loading}/> </Grid>
-                                    <Grid item xs={12} sm={7} md={8}> {/* Más espacio para el número */}
-                                                <TextField
-                                                    fullWidth
-                                                    size="small"
-                                                    label="Carnet de Identidad"
-                                                    {...register("idCard")}
-                                                    error={!!errors.idCard}
-                                                    helperText={errors.idCard?.message}
-                                                    disabled={loading}
-                                                />
-                                            </Grid>
-                                            <Grid item xs={12} sm={5} md={4}> {/* Menos espacio para la extensión */}
-                                                <FormControl fullWidth size="small" error={!!errors.idCardExtension} disabled={loading}>
-                                                    <InputLabel id="idcard-ext-label">Ext.</InputLabel>
-                                                    <Controller
-                                                        name="idCardExtension"
-                                                        control={control}
-                                                        // Añade rules si la extensión es obligatoria cuando hay CI
-                                                        // rules={{ validate: value => !watch('idCard') || !!value || 'Ext. requerida si hay CI' }}
-                                                        render={({ field }) => (
-                                                            <Select labelId="idcard-ext-label" label="Ext." {...field}>
-                                                                <MenuItem value=""><em>(Opcional)</em></MenuItem>
-                                                                {/* Usar la lista de departamentos ya cargada */}
-                                                                {departments.map((dept) => (
-                                                                    <MenuItem key={dept.code} value={dept.code}>{dept.code}</MenuItem> // Mostrar código corto
-                                                                ))}
-                                                            </Select>
-                                                        )}
-                                                    />
-                                                     {errors.idCardExtension && <FormHelperText>{errors.idCardExtension.message}</FormHelperText>}
-                                                </FormControl>
-                                            </Grid>
-                                </Grid>
-                            </Paper>
+                                        {/* --- AVATAR INTERACTIVO --- */}
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2.5, gap: 1 }}>
+                                             <Tooltip title="Cambiar foto de perfil">
+                                                 <IconButton
+                                                     onClick={handlePhotoMenuOpen} // Abre el menú de opciones
+                                                     sx={{ p: 0 }}
+                                                     disabled={loading}
+                                                     aria-controls={anchorElPhotoMenu ? 'photo-menu' : undefined}
+                                                     aria-haspopup="true"
+                                                     aria-expanded={anchorElPhotoMenu ? 'true' : undefined}
+                                                 >
+                                                     <Avatar src={displayImageUrl} sx={styles.profileAvatar}> 
+                                                         {/* Icono si no hay ninguna imagen */}
+                                                         {!displayImageUrl && <PersonIcon sx={styles.profileAvatarIcon}/>}
+                                                     </Avatar> 
+                                                 </IconButton>
+                                             </Tooltip>
+                                             {/* Input file oculto */}
+                                             <input type="file" accept="image/*" onChange={handleFileChange} id="profile-change-file" style={{ display: 'none' }} ref={fileInputRef} {...register('profilePicture')} />
 
-                            {/* <Paper sx={{ p: 2.5 }} variant="outlined">
-                                <Typography variant="h6" gutterBottom>Datos de Cuenta</Typography>
-                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Nombre Usuario*" {...register("username", { required: true })} error={!!errors.username} helperText={errors.username?.message} disabled={loading}/> </Grid>
-                                    <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Correo Electrónico*" type="email" {...register("email", { required: true, pattern: /^\S+@\S+$/i })} error={!!errors.email} helperText={errors.email?.message || (errors.email?.type === 'pattern' ? 'Correo inválido' : '')} disabled={loading}/> </Grid>
-                                    <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Contraseña*" type="password" {...register("password", { required: true, minLength: 6 })} error={!!errors.password} helperText={errors.password?.message || (errors.password?.type === 'minLength' ? 'Mínimo 6 caracteres' : '')} disabled={loading}/> </Grid>
-                                    <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Confirmar Contraseña*" type="password" {...register("confirmPassword", { required: true })} error={!!errors.confirmPassword} helperText={errors.confirmPassword?.message} disabled={loading}/> </Grid>
-                                 </Grid>
-                            </Paper> */}
-                        </Grid>
+                                             {/* Menú de Opciones para Foto */}
+                                             <Menu
+                                                 id="photo-menu"
+                                                 anchorEl={anchorElPhotoMenu}
+                                                 open={Boolean(anchorElPhotoMenu)}
+                                                 onClose={handlePhotoMenuClose}
+                                                 anchorOrigin={{ vertical: 'bottom', horizontal: 'left'}}
+                                                 transformOrigin={{ vertical: 'top', horizontal: 'left'}}
+                                             >
+                                                 <MenuItem onClick={handleUploadClick}>
+                                                     <UploadFileIcon fontSize="small" sx={{ mr: 1 }} /> Subir Archivo
+                                                 </MenuItem>
+                                                 <MenuItem onClick={handleOpenCameraModal}>
+                                                     <CameraAltIcon fontSize="small" sx={{ mr: 1 }} /> Usar Cámara
+                                                 </MenuItem>
+                                                 {/* Opción para quitar foto seleccionada/actual (si hay alguna) */}
+                                                 {(profilePicPreview || user?.profilePictureUrl) && <Divider />}
+                                                 {(profilePicPreview || user?.profilePictureUrl) &&
+                                                     <MenuItem onClick={handleRemovePicture} sx={{color: 'error.main'}}>
+                                                        <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Quitar Foto
+                                                     </MenuItem>
+                                                  }
+                                             </Menu>
+                                              {/* --- FIN AVATAR INTERACTIVO --- */}
 
-                        {/* Columna Derecha: Foto y Ubicación */}
-                        <Grid item xs={12} md={5}>
-                             <Paper sx={{ p: 2.5, mb: 3 }} variant="outlined">
-                                <Typography variant="h6" gutterBottom>Foto de Perfil</Typography>
-                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
-                                    <Avatar src={profilePicPreview || undefined} sx={{ width: 100, height: 100, mb: 1, bgcolor: 'grey.300' }}>
-                                        {!profilePicPreview && <PersonIcon sx={{ fontSize: 60 }}/>}
-                                    </Avatar>
-                                    {/* <input type="file" accept="image/*" onChange={handleFileChange} id="profile-upload-file" style={{ display: 'none' }} ref={fileInputRef} {...register('profilePicture')}/> */}
-                                    <input
-                                        type="file"
-                                        hidden
-                                        accept="image/*"
-                                        onChange={handleFileChange} // Solo usar onChange
-                                        id="profile-upload-file"
-                                        ref={fileInputRef}
-                                        // {...register('profilePicture')} // <-- QUITAR ESTA LÍNEA
-                                    />
-                                    <label htmlFor="profile-upload-file">
-                                        <Button variant="outlined" component="span" startIcon={<PhotoCamera />} size="small" disabled={loading || isCameraOpen}>
-                                            Subir Archivo
-                                        </Button>
-                                    </label>
-                                    {/* Separador o texto 'o' */}
-                                    <Typography variant="caption">o</Typography>
-                                    {!isCameraOpen ? (
-                                        <Button variant="outlined" startIcon={<CameraAltIcon />} onClick={startCamera} disabled={loading} size="small">Usar Cámara</Button>
-                                    ) : (
-                                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                                             <Box sx={{ width: '100%', maxWidth: 200, aspectRatio: '1/1', bgcolor: 'black', borderRadius: 1, overflow: 'hidden', position: 'relative'}}>
-                                                <video ref={videoRef} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }} />
-                                                <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
-                                            </Box>
-                                            {cameraError && <Alert severity="error" size="small" sx={{width: '100%', mt: 1}}>{cameraError}</Alert>}
-                                            <Button variant="contained" onClick={takePicture} disabled={loading || !cameraStream} size="small">Tomar Foto</Button>
-                                            <Button variant="outlined" color="error" onClick={() => { stopCameraStream(); setIsCameraOpen(false); setCameraError(''); }} disabled={loading} size="small" startIcon={<CloseIcon />}>Cancelar Cámara</Button>
+                                              {/* Nombre/Email (Editable) */}
+                                              <Box sx={styles.nameEditContainer}>
+                                                <Box sx={styles.nameEditFieldBox}>
+                                                     <TextField variant={isEditingName ? "outlined" : "standard"} size="small" sx={styles.nameTextField} {...register("name", { required: true })} /*...*/ />
+                                                     <Tooltip title="Editar Nombre"><IconButton size="small" onClick={() => setIsEditingName(!isEditingName)} sx={styles.editNameButton}> <EditIcon /*...*/ /> </IconButton></Tooltip>
+                                                 </Box>
+                                                  <Typography variant="body2" color="text.secondary" noWrap>{user?.email}</Typography>
+                                              </Box>
                                          </Box>
-                                    )}
-                                     {errors.profilePicture && <Typography color="error" variant="caption">{errors.profilePicture.message}</Typography>}
-                                </Box>
-                             </Paper>
-
-                            <Paper sx={{ p: 2.5 }} variant="outlined">
-                                <Typography variant="h6" gutterBottom>Ubicación</Typography>
-                                <Grid container spacing={2}>
-                                     <Grid item xs={12}><Button variant="outlined" size="small" startIcon={<LocationOnIcon />} onClick={handleSuggestLocation} disabled={loadingLocation.suggestion || loading}>Sugerir Ubicación</Button></Grid>
-                                     <Grid item xs={12} sm={6}><FormControl /* ... */ size="small" error={!!errors.location?.departmentCode} disabled={loadingLocation.dep || loading}><InputLabel>Departamento*</InputLabel><Controller name="location.departmentCode" control={control} rules={{ required: true }} render={({ field }) => ( <Select /* ... */ {...field} ><MenuItem value=""><em>Seleccione...</em></MenuItem>{departments.map(d => <MenuItem key={d.code} value={d.code}>{d.name}</MenuItem>)}</Select> )}/></FormControl> </Grid>
-                                     <Grid item xs={12} sm={6}><FormControl /* ... */ size="small" error={!!errors.location?.provinceCode} disabled={!selectedDepartmentCode || loadingLocation.prov || loading}><InputLabel>Provincia</InputLabel><Controller name="location.provinceCode" control={control} render={({ field }) => ( <Select /* ... */ {...field} ><MenuItem value=""><em>(Opcional)</em></MenuItem>{provinces.map(p => <MenuItem key={p.code} value={p.code}>{p.name}</MenuItem>)}</Select> )}/></FormControl> </Grid>
-                                     <Grid item xs={12} sm={6}><FormControl /* ... */ size="small" error={!!errors.location?.municipalityCode} disabled={!selectedProvinceCode || loadingLocation.mun || loading}><InputLabel>Municipio</InputLabel><Controller name="location.municipalityCode" control={control} render={({ field }) => ( <Select /* ... */ {...field} ><MenuItem value=""><em>(Opcional)</em></MenuItem>{municipalities.map(m => <MenuItem key={m.code} value={m.code}>{m.name}</MenuItem>)}</Select> )}/></FormControl> </Grid>
-                                     <Grid item xs={12} sm={6}><TextField fullWidth label="Zona / Barrio" size="small" {...register("location.zone")} disabled={loading} /></Grid>
+                                        <Divider sx={{ my: 2 }}/>
+                                <Grid container spacing={1}>
+                                    <Grid item xs={12} sm={7}><Controller name="birthDate" control={control} render={({ field }) => (<DatePicker slotProps={{ textField: { fullWidth: true,  size: 'small', error: !!errors.birthDate, helperText: errors.birthDate?.message,  InputLabelProps: { shrink: true } } }} label="Fecha Nacimiento" {...field} value={field.value || null} disabled={loading} disableFuture/> )}/> </Grid>
+                                    <Grid item xs={12} sm={5} style={{ width: '10%' }}>
+                                        <FormControl fullWidth size="small" error={!!errors.gender} disabled={loading}>
+                                            <InputLabel shrink={true} id="gender-label">Género</InputLabel>
+                                            <Controller name="gender" control={control} render={({ field }) => (
+                                                <Select label="Género" {...field} style={{ width: '100%' }}>
+                                                    <MenuItem value=""><em>(Opcional)</em></MenuItem>
+                                                    <MenuItem value="male">Varón</MenuItem>
+                                                    <MenuItem value="female">Mujer</MenuItem>
+                                                </Select>)}/>
+                                        </FormControl> 
+                                    </Grid>
+                                    <Grid item xs={12} sm={7}><TextField fullWidth size="small" label="Carnet Identidad" {...register("idCard")} error={!!errors.idCard} helperText={errors.idCard?.message} disabled={loading} slotProps={{ inputLabel: { shrink: true } }}/> </Grid>
+                                    <Grid item xs={12} sm={5}><FormControl fullWidth size="small" error={!!errors.idCardExtension} disabled={loading}><InputLabel shrink={true} id="idcard-ext-label">Ext.</InputLabel><Controller name="idCardExtension" control={control} render={({ field }) => ( <Select label="Extensión" {...field}> <MenuItem value=""><em>(Opcional)</em></MenuItem>{departments.map((dept) => (<MenuItem key={dept.code} value={dept.code}>{dept.abbreviation || dept.code}</MenuItem>))}</Select> )}/></FormControl> </Grid>
+                                    <Grid item xs={12} sm={6}><TextField fullWidth variant="outlined" size="small" label="Número Celular" {...register("phoneNumber")} error={!!errors.phoneNumber} helperText={errors.phoneNumber?.message} disabled={loading} InputLabelProps={{ shrink: true }}/> </Grid>
                                 </Grid>
                             </Paper>
                         </Grid>
+
+                       
+                       {/* --- Columna Derecha (Foto y Ubicación) --- */}
+                       <Grid item xs={12} md={6}>
+                                     {/* Sección Ubicación */}
+                            <Paper sx={styles.locationPaper} variant="outlined">
+                                <Typography variant="h6" gutterBottom>Ubicación*</Typography>
+                                 <Grid container spacing={2}>
+                                     <Grid item xs={12}><Button variant="outlined" size="small" startIcon={<LocationOnIcon />} onClick={handleSuggestLocation} disabled={loadingLocation.suggestion || loading}>Sugerir Ubicación</Button></Grid>
+                                     <Grid item xs={12} style={{ width: '20%' }}> <FormControl required fullWidth size="small" error={!!errors.location?.departmentCode} disabled={loadingLocation.dep || loading}><InputLabel shrink={true}>Departamento*</InputLabel><Controller name="location.departmentCode" rules={{ required: 'Departamento es requerido'}} control={control} render={({ field }) => ( <Select label="Departamento*" {...field} fullWidth style={{ width: '100%' }} ><MenuItem value=""><em>Seleccione...</em></MenuItem>{departments.map(d => <MenuItem key={d.code} value={d.code}>{d.name}</MenuItem>)}</Select> )}/></FormControl> </Grid>
+                                     <Grid item xs={12}  style={{ width: '20%' }}><FormControl fullWidth size="small" error={!!errors.location?.provinceCode} disabled={!selectedDepartmentCode || loadingLocation.prov || loading}><InputLabel shrink={true}>Provincia</InputLabel><Controller name="location.provinceCode" control={control} render={({ field }) => ( <Select label="Provincia" {...field} ><MenuItem value=""><em>(Opcional)</em></MenuItem>{provinces.map(p => <MenuItem key={p.code} value={p.code}>{p.name}</MenuItem>)}</Select> )}/></FormControl> </Grid>
+                                     <Grid item xs={12}  style={{ width: '20%' }}><FormControl fullWidth size="small" error={!!errors.location?.municipalityCode} disabled={!selectedProvinceCode || loadingLocation.mun || loading}><InputLabel shrink={true}>Municipio</InputLabel><Controller name="location.municipalityCode" control={control} render={({ field }) => ( <Select label="Municipio" {...field} ><MenuItem value=""><em>(Opcional)</em></MenuItem>{municipalities.map(m => <MenuItem key={m.code} value={m.code}>{m.name}</MenuItem>)}</Select> )}/></FormControl> </Grid>
+                                     <Grid item xs={12}><TextField fullWidth label="Zona / Barrio (Opcional)" size="small" {...register("location.zone")} disabled={loading} InputLabelProps={{ shrink: true }}/></Grid>
+                                </Grid>
+                            </Paper>
+                                </Grid>
                     </Grid>
                 )}
                 
@@ -646,7 +707,7 @@ const generatePdf = () => {
                  {/* Mostrar Cancelar solo si no hubo éxito */}
                  {!success && <Button onClick={onClose} disabled={loading} color="inherit">Cancelar</Button>}
                  {/* Mostrar Crear Cuenta solo si no hubo éxito */}
-                 {!success && <Button type="submit" variant="contained" color="primary" disabled={loading}> {loading ? <CircularProgress size={24} color="inherit"/> : 'Crear Cuenta'} </Button>}
+                 {!success && <Button type="submit" variant="contained" color="primary" disabled={loading}> {loading ? <CircularProgress size={24} color="inherit"/> : 'Guardar Perfil'} </Button>}
                  {/* Mostrar botón Cerrar si hubo éxito */}
                  {success && <Button onClick={onClose} color="primary">Cerrar</Button>}
             </DialogActions>

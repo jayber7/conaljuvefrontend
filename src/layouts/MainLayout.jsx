@@ -7,6 +7,7 @@ import Footer from '../components/Layout/Footer';
 import CompleteProfileModal from '../components/Auth/CompleteProfileModal';
 import IncompleteProfileBanner from '../components/Layout/IncompleteProfileBanner'; // <-- Importar Banner
 import { useAuth } from '../contexts/AuthContext';
+import BannerSlider from '../components/Layout/BannerSlider'; // <-- IMPORTAR SLIDER
 
 const EFFECTIVE_NAVBAR_HEIGHT = 90; // EJEMPLO: Ajusta este valor en píxeles
 
@@ -41,38 +42,41 @@ const MainLayout = () => {
   //   // cambia el estado de carga, autenticación o los datos del usuario.
   // }, [isAuthenticated, user, loading]);
 
-  const handleProfileModalClose = () => {
+  const handleProfileModalClose = useCallback(() => {
       console.log("Cerrando modal Completar Perfil...");
       setProfileModalOpen(false);
       // Considera qué pasa si el usuario cierra sin guardar y el perfil SIGUE incompleto.
       // ¿Debería volver a abrirse en la siguiente carga? La lógica actual lo haría.
-  };
+  },[]);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Navbar onOpenProfileModal={handleOpenProfileModal} /> {/* Navbar no necesita props para abrir modales aquí */}
+      <Navbar onOpenProfileModal={handleOpenProfileModal} /> 
+      <BannerSlider />
        {/* Contenido principal */}
       <Container
         component="main"
-        maxWidth="lg"
+        maxWidth={false} 
+        
         sx={{
-            flexGrow: 1,
-            pb: 4, // Padding bottom
-            // Espaciado superior para compensar el Navbar fijo
-            mt: `${EFFECTIVE_NAVBAR_HEIGHT}px`, // O usa paddingTop
-            pt: 2, // Puedes añadir un padding top adicional si quieres más espacio arriba
-            position: 'relative',
-            zIndex: 1,
-         }}
-      ></Container>
+          flexGrow: 1,
+          width: '100%',
+          // AJUSTAR PADDING/MARGIN SUPERIOR para que NO incluya altura del banner
+          // El banner ahora está *encima* de este container
+          pt: 4, // Padding superior DENTRO del container
+          pb: 4, // Padding inferior DENTRO del container
+          mt: `${EFFECTIVE_NAVBAR_HEIGHT}px`, // Margen superior para compensar SOLO el Navbar fijo
+          px: { xs: 2, sm: 3, md: 4 } // Padding horizontal si maxWidth={false}
+       }}
+      >
        {/* --- Mostrar Banner si el perfil está incompleto --- */}
        {!loading && isAuthenticated && user && !user.isProfileComplete && (
         <Box sx={{ mb: 3 }}> {/* Añadir margen inferior al banner */}
-          <IncompleteProfileBanner onOpenModal={handleOpenProfileModal} />
+          <IncompleteProfileBanner onOpenProfileModal={handleOpenProfileModal} />
         </Box>
       )}
       {/* --- Fin Banner --- */}
-      <Container component="main" maxWidth="lg" sx={{ flexGrow: 1, pb: 4,  pt: `${EFFECTIVE_NAVBAR_HEIGHT / 8 + 4} `, position: 'relative', zIndex: 1, }}> 
+      
         <Outlet />
       </Container>
 
