@@ -1,110 +1,297 @@
 // src/components/Layout/Sidebar.jsx
-import React from 'react';
-import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider, Paper, Tooltip } from '@mui/material';
-import { NavLink as RouterNavLink } from 'react-router-dom'; // Usar NavLink para estilo activo
-// Importar iconos principales
+import React, { useState, useRef } from 'react'; // Necesitamos useState
+import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider, Paper, Tooltip, Menu, MenuItem, Popover, MenuList } from '@mui/material'; // Importar Menu, MenuItem
+import { NavLink as RouterNavLink, useLocation, useNavigate } from 'react-router-dom';
+// ... (imports iconos) ...
 import HomeIcon from '@mui/icons-material/Home';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import HowToRegIcon from '@mui/icons-material/HowToReg'; // O PersonAddIcon
 import MapIcon from '@mui/icons-material/Map';
+import LocationCityIcon from '@mui/icons-material/LocationCity'; // Para Municipales
+import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact'; // Para Coordinadoras
 import GroupsIcon from '@mui/icons-material/Groups';
-// ... otros iconos si son necesarios ...
+import { colors } from '@mui/material';
 
-// Definir items de la barra lateral
+// --- NUEVO TAMAÑO Y ESTILO ---
+const sidebarButtonSize = 56; // Tamaño más pequeño (ej. 75px)
+// --- DEFINIR ITEMS CON COLORES ---
+// Usaremos colores de MUI o hexadecimales
 const sidebarNavItems = [
-    { id: 'inicio', name: 'Inicio', path: '/', icon: <HomeIcon /> },
-    { id: 'institucion', name: 'Institución', path: '/sobre-conaljuve', icon: <AccountBalanceIcon /> }, // Enlaza a la página principal de info
-    { id: 'federaciones', name: 'Federaciones', path: '/federaciones', icon: <MapIcon /> }, // Ruta base para federaciones
-    { id: 'comites', name: 'Comités', path: '/comites', icon: <GroupsIcon /> }, // Ruta base para comités
-];
+    { id: 'inicio', name: 'Inicio', path: '/', icon: <HomeIcon />, bgColor: colors.blue[600], textColor: '#fff' },
+    {
+      id: 'institucion', name: 'Institución', icon: <AccountBalanceIcon />, bgColor: colors.deepOrange[500], textColor: '#fff',
+      subItems: [
+        { name: '¿Qué es CONALJUVE?', path: '/sobre-conaljuve' }, // Mover aquí
+        { name: 'Organigrama', path: '/institucion/organigrama' },
+        { name: 'Estatuto Orgánico', path: '/institucion/estatuto' },
+        // { name: 'Estructura CONALJUVE', path: '/institucion/estructura' }, // Combinado o separado?
+        { name: 'Visión y Misión', path: '/institucion/vision-mision' },
+        { name: 'Objeto y Fines', path: '/institucion/objeto-fines' },
+      ]
+    },
+    { id: 'registro', name: 'Registro', path: '/registro', icon: <HowToRegIcon />, bgColor: colors.teal[500], textColor: '#fff' }, // Enlace directo (o abre modal?)
+    {
+      id: 'federaciones_dptales', name: 'Fede. Dptales.', icon: <MapIcon />, bgColor: colors.green[600], textColor: '#fff', // Nombre corto
+      subItems: [
+        { name: 'Chuquisaca', path: '/federaciones/dptales/chuquisaca' },
+        { name: 'La Paz', path: '/federaciones/dptales/la-paz' },
+        { name: 'Cochabamba', path: '/federaciones/dptales/cochabamba' },
+        { name: 'Oruro', path: '/federaciones/dptales/oruro' },
+        { name: 'Potosí', path: '/federaciones/dptales/potosi' },
+        { name: 'Tarija', path: '/federaciones/dptales/tarija' },
+        { name: 'Santa Cruz', path: '/federaciones/dptales/santa-cruz' },
+        { name: 'Beni', path: '/federaciones/dptales/beni' },
+        { name: 'Pando', path: '/federaciones/dptales/pando' },
+        // { name: 'Directorio Nacional', path: '/federaciones/dptales/directorio' }, // ¿General?
+        // { name: 'Estatuto Marco', path: '/federaciones/dptales/estatuto' }, // ¿General?
+      ]
+    },
+    {
+      id: 'federaciones_muni', name: 'Fede. Muni.', icon: <LocationCityIcon />, bgColor: colors.cyan[600], textColor: '#fff', // Nombre corto
+      subItems: [
+        { name: 'Chuquisaca', path: '/federaciones/muni/chuquisaca' },
+        { name: 'La Paz', path: '/federaciones/muni/la-paz' },
+         // ... (resto de departamentos) ...
+        { name: 'Pando', path: '/federaciones/muni/pando' },
+      ]
+    },
+      {
+      id: 'coordinadoras', name: 'Coord.', icon: <ConnectWithoutContactIcon />, bgColor: colors.indigo[500], textColor: '#fff', // Nombre corto
+      subItems: [
+        { name: 'Chuquisaca', path: '/coordinadoras/chuquisaca' },
+        { name: 'La Paz', path: '/coordinadoras/la-paz' },
+         // ... (resto de departamentos) ...
+        { name: 'Pando', path: '/coordinadoras/pando' },
+      ]
+    },
+    {
+      id: 'comites', name: 'Comités', icon: <GroupsIcon />, bgColor: colors.purple[500], textColor: '#fff',
+      subItems: [
+        { name: 'Comité de Juventud', path: '/comites/juventud' },
+        { name: 'Comité de Profesionales', path: '/comites/profesionales' },
+        { name: 'Comité de Mujeres', path: '/comites/mujeres' },
+        { name: 'Comité de Salud', path: '/comites/salud' },
+        { name: 'Aliados Estratégicos', path: '/comites/aliados' },
+      ]
+    },
+  ];
+// --- FIN DEFINIR ITEMS ---
 
-// Estilo para los botones de la barra lateral (inspirado en categorías)
-const sidebarButtonStyle = (theme) => ({ // Hacerlo función para acceder al tema
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    textAlign: 'center',
-    width: '90px', // Ancho fijo (ajustar)
-    height: '90px', // Alto fijo (ajustar)
-    borderRadius: '12px', // Más redondeado
-    mb: 1.5, // Margen inferior
-    color: theme.palette.text.secondary, // Color icono/texto inactivo
-    backgroundColor: theme.palette.background.paper, // Fondo base
-    border: `1px solid ${theme.palette.divider}`,
-    transition: 'background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out',
-    '& .MuiListItemIcon-root': { // Estilo icono
-        minWidth: 'auto',
-        color: 'inherit', // Heredar color
-        fontSize: '2rem', // Tamaño icono
-        mb: 0.5, // Espacio bajo icono
-    },
-    '& .MuiListItemText-root .MuiTypography-root': { // Estilo texto
-         fontSize: '0.7rem', // Tamaño texto
-         fontWeight: 500,
-         lineHeight: 1.2,
-    },
-    // Estilo cuando el enlace está ACTIVO (usando NavLink)
-    '&.active': {
-      color: theme.palette.primary.main,
-      backgroundColor: theme.palette.action.selected, // Un fondo sutil activo
-      borderColor: theme.palette.primary.light,
-      fontWeight: 'bold',
-      '& .MuiListItemIcon-root': {
-          color: theme.palette.primary.main, // Icono color primario
-       },
-        '& .MuiListItemText-root .MuiTypography-root': { // Estilo texto
-             fontWeight: 600,
+// --- ESTILO DINÁMICO DEL BOTÓN ---
+// Ahora acepta el item completo para acceder a sus colores
+const sidebarButtonStyle = (theme, item, isActive) => {
+    const baseBgColor = item.bgColor || theme.palette.background.paper; // Color base del item o default
+    const baseTextColor = item.textColor || theme.palette.text.secondary; // Color texto/icono base
+    const activeBgColor = theme.palette.action.selected; // Fondo para estado activo (claro)
+    const activeColor = theme.palette.primary.main; // Color texto/icono activo
+    const hoverBgColor = theme.palette.action.hover; // Fondo hover general    
+    const hoverColor = baseBgColor; // <-- Usar el color de fondo base para el hover del icono/texto
+
+    
+    return {
+        display: 'flex',
+        //flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        //textAlign: 'center',
+        width: `${sidebarButtonSize}px`, // Usar variable
+        height: `${sidebarButtonSize}px`, // Usar variable
+        borderRadius: '10px', // Ajustar redondez
+        mb: 1.5, // Menos margen inferior
+        p: 0, // Padding interno
+        // --- ESTADO BASE (INACTIVO) ---
+        // Aplicar colores base
+        color: isActive ? activeColor : baseTextColor, // Color basado en activo
+        backgroundColor: isActive ? activeBgColor : baseBgColor, // Color fondo
+        border: isActive ? `2px solid ${theme.palette.primary.light}`: '1px solid transparent', // Borde solo si activo (o borde suave siempre)
+        transition: theme.transitions.create(['background-color', 'color', 'transform', 'border-color'], {
+            duration: theme.transitions.duration.short,
+        }),
+        // --- ESTILOS DEL ICONO ---
+        '& .MuiListItemIcon-root': {
+            minWidth: 'auto', 
+            fontSize: `${sidebarButtonSize * 0.6}px`, // Ejemplo: 60% del tamaño del botón (ajusta este factor)
+            mb: 0.25, // Menos espacio icono-texto
+            color: 'inherit', 
+            transition: 'inherit',
+            margin: 0,
+            padding: 0,
+            display: 'flex', // Asegurar centrado del icono SVG interno
+            alignItems: 'center',
+            justifyContent: 'center',
         },
-    },
-    // Hover general
-     '&:hover': {
-        backgroundColor: theme.palette.action.hover,
-        color: theme.palette.primary.main,
-     }
-});
+        
+        '& .MuiListItemText-root .MuiTypography-root': {
+             fontSize: '0.65rem', // Texto más pequeño
+             fontWeight: isActive ? 600 : 500, // Negrita si activo
+             lineHeight: 1.1,
+             color: 'inherit',
+        },
+        
+        // Estilo HOVER (sobrescribir el color base)
+         '&:hover': {
+            backgroundColor: hoverBgColor, // Fondo hover general claro
+            color:  hoverColor, // Color hover general primario
+            transform: 'scale(1.05)', // Efecto sutil de escala
+            border: isActive ? `2px solid ${theme.palette.primary.light}` : '1px solid transparent',
 
+            // Opcional: Hacer el hover más intenso usando el color del botón
+            // backgroundColor: alpha(baseBgColor, 0.8), // Aclarar ligeramente el color base
+            // color: baseTextColor, // Mantener texto blanco/original
+         }
+    };
+};
+// --- FIN ESTILO ---
 
-// Ancho de la barra lateral
-export const drawerWidth = 120; // Ajustar este valor
+export const drawerWidth = 75; // Reducir ancho barra lateral AÚN MÁS (ej. 75px) - Experimenta
 
-const Sidebar = () => {
+const Sidebar = ({ topOffset = 0 }) => {
+    const [openMenuId, setOpenMenuId] = useState(null); // Guarda el ID del menú abierto
+    const [anchorEl, setAnchorEl] = useState(null); // Elemento al que se ancla el Popover
+    const navigate = useNavigate(); // Hook para navegar
+    const location = useLocation();
+
+    // Refs para mantener timeouts y evitar cierres accidentales
+    const leaveTimeoutRef = useRef(null);
+    const enterTimeoutRef = useRef(null);
+
+    // Abrir Popover al entrar al botón (con pequeño delay opcional)
+    const handleMouseEnter = (event, menuId) => {
+        clearTimeout(leaveTimeoutRef.current); // Cancela cualquier cierre pendiente
+        // Opcional: Delay antes de abrir
+        // enterTimeoutRef.current = setTimeout(() => {
+            setAnchorEl(event.currentTarget);
+            setOpenMenuId(menuId);
+        // }, 100); // Delay de 100ms
+    };
+
+    // Iniciar cierre al salir del botón o del Popover (con delay)
+    const handleMouseLeave = () => {
+        clearTimeout(enterTimeoutRef.current); // Cancela apertura pendiente
+        // Delay antes de cerrar para permitir mover el ratón hacia el Popover
+        leaveTimeoutRef.current = setTimeout(() => {
+            setAnchorEl(null);
+            setOpenMenuId(null);
+        }, 200); // Delay de 200ms (ajusta según necesidad)
+    };
+
+    // Mantener abierto si el ratón entra al Popover
+    const handlePopoverEnter = () => {
+        clearTimeout(leaveTimeoutRef.current); // Cancela el cierre pendiente
+    };
+
+    // Navegar y cerrar
+    const handleNavigateAndClose = (path) => {
+         clearTimeout(leaveTimeoutRef.current);
+         clearTimeout(enterTimeoutRef.current);
+         setAnchorEl(null);
+         setOpenMenuId(null);
+         navigate(path);
+    };
+
+    // Estado para manejar qué menú está abierto y su ancla
+    const [anchorElMenu, setAnchorElMenu] = useState({}); // { institucion: anchorElement, federaciones_dptales: anchorEl, ... }
+    
+    // Abrir menú específico
+    const handleMenuOpen = (event, menuId) => {
+        setAnchorElMenu(prev => ({ ...prev, [menuId]: event.currentTarget }));
+    };
+
+    // Cerrar menú específico
+    const handleMenuClose = (menuId) => {
+         setAnchorElMenu(prev => ({ ...prev, [menuId]: null }));
+    };
+
+    // Cerrar TODOS los menús
+    const handleCloseAllMenus = () => {
+        setAnchorElMenu({});
+    };
     return (
-        <Paper
-            elevation={2}
+        <Paper 
+        elevation={2}
             sx={{
                 width: drawerWidth,
-                flexShrink: 0, // Evitar que se encoja
-                height: '100vh', // Ocupar toda la altura
-                position: 'fixed', // Fijar a la izquierda
-                top: 0,
+                flexShrink: 0,
+                height: '100vh',
+                position: 'fixed',
+                top: 0, // Empieza arriba
                 left: 0,
-                zIndex: (theme) => theme.zIndex.appBar - 1, // Debajo del AppBar superior
-                overflowY: 'auto', // Permitir scroll si hay muchos items
-                pt: (theme) => `${theme.mixins.toolbar.minHeight}px`, // Padding top para dejar espacio al AppBar superior
-                borderRight: (theme) => `1px solid ${theme.palette.divider}`
+                backgroundImage: `url('/assets/patterns/pattern.png')`,
+                zIndex: (theme) => theme.zIndex.drawer, // Z-index normal de drawer
+                overflowY: 'auto',
+                // --- Aplicar offset para empezar DEBAJO del AppBar del logo ---
+                pt: `${topOffset}px`,
+                // --- FIN Aplicar offset ---
+                borderRight: (theme) => `1px solid ${theme.palette.divider}`,
+                bgcolor: '#f4f6f8' // O un color de fondo que te guste
             }}
         >
-            <List sx={{ p: 1 }}> {/* Padding interno */}
-                {sidebarNavItems.map((item) => (
-                    <ListItem key={item.id} disablePadding sx={{ display: 'flex', justifyContent: 'center' }}>
-                      <Tooltip title={item.name} placement="right">
-                        {/* Usar NavLink para obtener clase 'active' */}
-                        <ListItemButton
-                            component={RouterNavLink}
-                            to={item.path}
-                            // El estilo 'active' se aplicará automáticamente por NavLink
-                            sx={(theme) => sidebarButtonStyle(theme)}
-                            end // Para que NavLink considere ruta exacta para 'active' (opcional)
-                        >
-                            <ListItemIcon sx={{justifyContent: 'center'}}>
-                                {item.icon}
-                            </ListItemIcon>
-                            <ListItemText primary={item.name} />
-                        </ListItemButton>
-                        </Tooltip>
-                    </ListItem>
-                ))}
-                 {/* Puedes añadir Dividers o más secciones si es necesario */}
+            <List sx={{ p: 0.5, pt: 0.5 /* Ajustar pt */ }}>{/* Reducir padding lista */}
+                {sidebarNavItems.map((item) => {
+                    const isActive = item.path === location.pathname ||
+                                     item.subItems?.some(sub => location.pathname.startsWith(sub.path));
+                    const isMenuOpen = openMenuId === item.id; // Verificar si el menú de ESTE item está abierto
+
+                    return (
+                        <ListItem key={item.id} disablePadding sx={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
+                            <Tooltip title={item.name} placement="right">
+                                <ListItemButton
+                                    component={item.subItems ? 'button' : RouterNavLink} // Sigue siendo button si tiene subItems
+                                    to={!item.subItems ? item.path : undefined}
+                                    end={!item.subItems}
+                                    // --- Usar Handlers de Hover ---
+                                    onClick={!item.subItems ? () => handleNavigateAndClose(item.path) : undefined} // Navegar solo si no hay submenú
+                                    onMouseEnter={item.subItems ? (e) => handleMouseEnter(e, item.id) : undefined}
+                                    onMouseLeave={item.subItems ? handleMouseLeave : undefined}
+                                    // --- Fin Handlers Hover ---
+                                    aria-owns={isMenuOpen ? `${item.id}-popover` : undefined}
+                                    aria-haspopup={item.subItems ? 'true' : undefined}
+                                    sx={(theme) => sidebarButtonStyle(theme, item, isActive)}
+                                    className={item.subItems && isActive ? 'active' : ''}
+                                >
+                                    <ListItemIcon sx={{ justifyContent: 'center', width: '100%', height: '100%' }}>{item.icon}</ListItemIcon>
+                                    {/* <ListItemText primary={item.name} /> */}
+                                </ListItemButton>
+                            </Tooltip>
+
+                            {/* Renderizar POPOVER si este item tiene subItems */}
+                            {item.subItems && (
+                                <Popover
+                                    id={`${item.id}-popover`}
+                                    open={isMenuOpen}
+                                    anchorEl={anchorEl} // Usar el estado anchorEl general
+                                    // --- Posicionamiento al lado ---
+                                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                                    transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                                    // --- Fin Posicionamiento ---
+                                    // Evitar cierre al hacer clic dentro del Popover
+                                    disableRestoreFocus
+                                    // Manejar entrada/salida del ratón en el Paper del Popover
+                                    PaperProps={{
+                                        onMouseEnter: handlePopoverEnter, // Mantener abierto
+                                        onMouseLeave: handleMouseLeave, // Iniciar cierre al salir
+                                        sx: { ml: 1, boxShadow: 3, minWidth: 200, pointerEvents: 'auto' } // Estilos
+                                    }}
+                                    sx={{ pointerEvents: 'none' /* Evitar bloqueo inicial */ }}
+                                >
+                                    <MenuList autoFocusItem={false}>
+                                        {item.subItems.map((subItem) => (
+                                            <MenuItem
+                                                key={subItem.name}
+                                                onClick={() => handleNavigateAndClose(subItem.path)} // Usar nuevo handler
+                                                selected={location.pathname === subItem.path}
+                                                // Aplicar estilo compacto si se definió en el tema
+                                                // sx={{ py: 0.5, fontSize: '0.9rem' }}
+                                            >
+                                                {subItem.name}
+                                            </MenuItem>
+                                        ))}
+                                    </MenuList>
+                                </Popover>
+                            )}
+                        </ListItem>
+                    );
+                })}
             </List>
         </Paper>
     );

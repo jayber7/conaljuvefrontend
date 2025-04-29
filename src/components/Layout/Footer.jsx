@@ -93,8 +93,7 @@ const Footer = () => {
                     {/* --- Columna 2: Soporte / Participa --- */}
                     <Grid xs={12} sm={6} md={3}>
                         <Typography variant="h6" gutterBottom sx={footerTitleStyle}>
-                            Suscribete y danos a conocer tus inquietudes y necesidades CONALJUVE.
-                            Se parte de nuestra comunidad.
+                            Participa 
                         </Typography>
                         <Link component={RouterLink} to="/registro" color="inherit" display="block" sx={footerLinkStyle}>Registrarse</Link>
                         <Link component={RouterLink} to="/login" color="inherit" display="block" sx={footerLinkStyle}>Iniciar Sesión</Link>

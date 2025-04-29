@@ -424,7 +424,24 @@ useEffect(() => {
         await refetchUser(); // Recargar datos del usuario en el contexto
         const timer = setTimeout(() => { onClose(); }, 2000); // Cerrar después de éxito
         return () => clearTimeout(timer);
-   
+        setSuccess(true); // Marcar éxito
+        const userJustSaved = response.data?.data?.user || data; // Prioriza respuesta del backend
+        const dataForPdf = {
+            name: userJustSaved.name,
+            // Usar userJustSaved o data para los demás campos...
+            username: user?.username || userJustSaved.email, // Obtener username del contexto si no viene del form
+            email: user?.email || userJustSaved.email, // Email no suele cambiar aquí
+            birthDate: userJustSaved.birthDate ? new Date(userJustSaved.birthDate).toLocaleDateString('es-ES') : 'No especificada',
+            gender: userJustSaved.gender === true ? 'Varón' : (userJustSaved.gender === false ? 'Mujer' : 'No especificado'), // Usa el booleano
+            idCard: userJustSaved.idCard || 'No especificado',
+            idCardExtension: userJustSaved.idCardExtension || '',
+            phoneNumber: userJustSaved.phoneNumber || 'No especificado',
+            departmentName: departments.find(d => d.code == userJustSaved.location?.departmentCode)?.name || `Código ${userJustSaved.location?.departmentCode || 'N/A'}`,
+            provinceName: provinces.find(p => p.code == userJustSaved.location?.provinceCode)?.name || `Código ${userJustSaved.location?.provinceCode || 'N/A'}`,
+            municipalityName: municipalities.find(m => m.code == userJustSaved.location?.municipalityCode)?.name || `Código ${userJustSaved.location?.municipalityCode || 'N/A'}`,
+            zone: userJustSaved.location?.zone || 'No especificada',
+            registrationDate: user?.createdAt ? new Date(user.createdAt).toLocaleString('es-ES') : new Date().toLocaleString('es-ES') // Fecha de registro original o actual
+        };
    setPdfData(dataForPdf);
    // --- FIN GUARDAR DATOS ---
    reset();

@@ -1,96 +1,113 @@
 // src/layouts/MainLayout.jsx
-import React, { useState, useEffect, useCallback  } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'; // useNavigate no es necesario aquí para esto
-import { Box, Container } from '@mui/material';
-import Navbar from '../components/Layout/Navbar';
+import React, { useState, useCallback } from 'react';
+import { Outlet } from 'react-router-dom';
+import { Box, CssBaseline, AppBar, Toolbar, Container, Typography, Link  } from '@mui/material'; // Importar AppBar, Toolbar
+import NavbarActions from '../components/Layout/NavbarActions'; // Un nuevo componente para acciones navbar
 import Footer from '../components/Layout/Footer';
+
 import CompleteProfileModal from '../components/Auth/CompleteProfileModal';
-import IncompleteProfileBanner from '../components/Layout/IncompleteProfileBanner'; // <-- Importar Banner
+import IncompleteProfileBanner from '../components/Layout/IncompleteProfileBanner';
+import Sidebar, { drawerWidth } from '../components/Layout/Sidebar'; // Importar Sidebar y su ancho
+import BannerSlider from '../components/Layout/BannerSlider'; // <-- 1. IMPORTAR SLIDER
 import { useAuth } from '../contexts/AuthContext';
-import BannerSlider from '../components/Layout/BannerSlider'; // <-- IMPORTAR SLIDER
+import logoConaljuve from '../assets/LogoCONALJUVE.png'; // Logo para AppBar superior
+import { Link as RouterLink } from 'react-router-dom'; // Para el logo link
 
-const EFFECTIVE_NAVBAR_HEIGHT = 90; // EJEMPLO: Ajusta este valor en píxeles
-
+// --- Definir Altura del AppBar del Logo ---
+const logoAppBarHeight = 50; // Ajusta esta altura según el tamaño de tu logo
 const MainLayout = () => {
-  const { user, isAuthenticated, loading } = useAuth(); // Obtener estado completo
-  const [profileModalOpen, setProfileModalOpen] = useState(false);
-  
-  const handleOpenProfileModal = useCallback(() => {
-    console.log("Abriendo modal Completar/Editar Perfil...");
-    setProfileModalOpen(true);
-}, []); // useCallback para que la referencia de la función sea estable
+    const { user, isAuthenticated, loading } = useAuth();
+    const [profileModalOpen, setProfileModalOpen] = useState(false);
 
-  // // Efecto para abrir modal si el usuario está logueado pero perfil incompleto
-  // useEffect(() => {
-  //   console.log("MainLayout Effect:", { loading, isAuthenticated, user }); // <-- DEBUG LOG
+    const handleOpenProfileModal = useCallback(() => { setProfileModalOpen(true); }, []);
+    const handleProfileModalClose = useCallback(() => { setProfileModalOpen(false); }, []);
+    return (
+        <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+            <CssBaseline />
 
-  //   // Condiciones clave:
-  //   // 1. Ya no debe estar cargando (loading === false)
-  //   // 2. Debe estar autenticado (isAuthenticated === true)
-  //   // 3. El objeto 'user' debe existir
-  //   // 4. La propiedad 'isProfileComplete' en 'user' debe ser false
-  //   if (!loading && isAuthenticated && user && user.isProfileComplete === false) {
-  //     console.log("Condición cumplida: Abriendo modal Completar Perfil...");
-  //     setProfileModalOpen(true);
-  //   } else {
-  //     // Opcional: Asegurarse de que esté cerrado en otros casos (aunque 'open' controla esto)
-  //     // console.log("Condición NO cumplida o usuario ya completo/no auth/cargando.");
-  //     // setProfileModalOpen(false); // Podría causar cierres inesperados si el usuario lo abre manualmente
-  //   }
+            {/* --- AppBar Superior Fijo (Solo Logo y Acciones Derecha) --- */}
+            <AppBar
+                position="fixed"
+                sx={{
+                    zIndex: (theme) => theme.zIndex.drawer + 1, // Encima del Sidebar
+                    bgcolor: 'background.paper', // Fondo blanco o el que prefieras
+                    color: 'text.primary',
+                    boxShadow: 1, // Sombra ligera
+                    height: `${logoAppBarHeight}px` // Altura fija
+                }}
+                elevation={0}
+            >
+                <Toolbar sx={{ justifyContent: 'space-between', minHeight: `${logoAppBarHeight}px !important`, backgroundImage: `url('/assets/patterns/pattern.png')` }}>
+                    {/* Logo a la Izquierda */}
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <RouterLink to="/" style={{ display: 'flex', alignItems: 'center', textDecoration:'none' }}>
+                           <Box
+                                component="img"
+                                sx={{ height: logoAppBarHeight * 0.7, // 70% de la altura del AppBar
+                                     width: 'auto',
+                                     mr: 1.5 }}
+                                alt="Logo CONALJUVE"
+                                src={logoConaljuve}
+                           />
+                            {/* Opcional: Texto CONALJUVE al lado */}
+                            {/* <Typography variant="h6" noWrap sx={{ fontWeight: 700, color: 'primary.main' }}>CONALJUVE</Typography> */}
+                        </RouterLink>
+                    </Box>
 
-  //   // Las dependencias son correctas: este efecto se re-ejecuta cuando
-  //   // cambia el estado de carga, autenticación o los datos del usuario.
-  // }, [isAuthenticated, user, loading]);
+                    {/* Acciones a la Derecha */}
+                    <NavbarActions onOpenProfileModal={handleOpenProfileModal}/>
+                </Toolbar>
+            </AppBar>
+            {/* --- Fin AppBar Superior --- */}
 
-  const handleProfileModalClose = useCallback(() => {
-      console.log("Cerrando modal Completar Perfil...");
-      setProfileModalOpen(false);
-      // Considera qué pasa si el usuario cierra sin guardar y el perfil SIGUE incompleto.
-      // ¿Debería volver a abrirse en la siguiente carga? La lógica actual lo haría.
-  },[]);
 
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Navbar onOpenProfileModal={handleOpenProfileModal} /> 
-      <BannerSlider />
-       {/* Contenido principal */}
-      <Container
-        component="main"
-        maxWidth={false} 
-        
-        sx={{
-          flexGrow: 1,
-          width: '100%',
-          // AJUSTAR PADDING/MARGIN SUPERIOR para que NO incluya altura del banner
-          // El banner ahora está *encima* de este container
-          pt: 4, // Padding superior DENTRO del container
-          pb: 4, // Padding inferior DENTRO del container
-          mt: `${EFFECTIVE_NAVBAR_HEIGHT}px`, // Margen superior para compensar SOLO el Navbar fijo
-          px: { xs: 2, sm: 3, md: 4 } // Padding horizontal si maxWidth={false}
-       }}
-      >
-       {/* --- Mostrar Banner si el perfil está incompleto --- */}
-       {!loading && isAuthenticated && user && !user.isProfileComplete && (
-        <Box sx={{ mb: 3 }}> {/* Añadir margen inferior al banner */}
-          <IncompleteProfileBanner onOpenProfileModal={handleOpenProfileModal} />
+            {/* --- BARRA LATERAL FIJA --- */}
+            {/* Ajustar padding top para que empiece DEBAJO del AppBar superior */}
+            <Sidebar topOffset={logoAppBarHeight} />
+
+
+            {/* --- CONTENEDOR PRINCIPAL (Derecha) --- */}
+            <Box
+                component="main"
+                sx={{
+                    flexGrow: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    // Padding top para que el contenido empiece DEBAJO del AppBar superior
+                    pt: `${logoAppBarHeight}px`,
+                    pl: `${drawerWidth}px`, // Padding izquierdo igual al ancho del Sidebar
+                    width: `calc(100% - ${drawerWidth}px)`,
+                    minHeight: '100vh',
+                    bgcolor: 'background.default',
+                }}
+            >
+                {/* --- 2. RENDERIZAR SLIDER AQUÍ --- */}
+                 {/* Justo después del espacio del AppBar superior */}
+                 <BannerSlider />
+                 {/* Banner Perfil Incompleto (Dentro del área de contenido) */}
+                 {!loading && isAuthenticated && user && !user.isProfileComplete && (
+                     <IncompleteProfileBanner onOpenProfileModal={handleOpenProfileModal} />
+                 )}
+
+                 {/* Área de Contenido Real de la Página */}
+                 <Box sx={{ flexGrow: 1, p: 3 }}>
+                    <Outlet />
+                 </Box>
+
+                {/* Footer */}
+                 <Footer />
+
+            </Box>
+            {/* --- FIN CONTENEDOR PRINCIPAL --- */}
+
+            {/* --- Modales Globales --- */}
+            <CompleteProfileModal
+                open={profileModalOpen}
+                onClose={handleProfileModalClose}
+            />
         </Box>
-      )}
-      {/* --- Fin Banner --- */}
-      
-        <Outlet />
-      </Container>
-
-      <Footer />
-
-      {/* Renderizar modal basado en el estado local */}
-      {/* Asegúrate de que CompleteProfileModal exista y se importe correctamente */}
-       {/* Modal de Completar/Editar Perfil */}
-      <CompleteProfileModal
-         open={profileModalOpen}
-         onClose={handleProfileModalClose}
-      />
-    </Box>
-  );
+    );
+   
 };
 
 export default MainLayout;
