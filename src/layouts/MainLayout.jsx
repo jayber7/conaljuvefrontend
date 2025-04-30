@@ -49,6 +49,25 @@ const MainLayout = () => {
                                 alt="Logo CONALJUVE"
                                 src={logoConaljuve}
                            />
+                           <Typography
+                                       variant="h4"
+                                       noWrap
+                                      
+                                       
+                                       sx={{
+                                         ml: 16,
+                                         display: { xs: 'none', md: 'flex' }, // Oculto en móvil, visible en desktop
+                                         fontWeight: 700,
+                                         // letterSpacing: '.1rem',
+                                         color: '#ffffff', // Usar color primario del tema
+                                         textDecoration: 'none',
+                                         alignItems: 'center'
+                                       }}
+                                     >
+                                        
+                                        {/* <Box component="span" sx={{mr: 1, fontSize: '1.8rem'}}>🇧🇴</Box> Emoji temporal */}
+                                        CONFEDERACIÓN NACIONAL DE JUNTAS VECINALES DE BOLIVIA
+                                     </Typography>
                             {/* Opcional: Texto CONALJUVE al lado */}
                             {/* <Typography variant="h6" noWrap sx={{ fontWeight: 700, color: 'primary.main' }}>CONALJUVE</Typography> */}
                         </RouterLink>
@@ -84,10 +103,7 @@ const MainLayout = () => {
                 {/* --- 2. RENDERIZAR SLIDER AQUÍ --- */}
                  {/* Justo después del espacio del AppBar superior */}
                  <BannerSlider />
-                 {/* Banner Perfil Incompleto (Dentro del área de contenido) */}
-                 {!loading && isAuthenticated && user && !user.isProfileComplete && (
-                     <IncompleteProfileBanner onOpenProfileModal={handleOpenProfileModal} />
-                 )}
+                 
 
                  {/* Área de Contenido Real de la Página */}
                  <Box sx={{ flexGrow: 1, p: 3 }}>

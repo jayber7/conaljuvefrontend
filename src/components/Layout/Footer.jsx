@@ -95,7 +95,7 @@ const Footer = () => {
                         <Typography variant="h6" gutterBottom sx={footerTitleStyle}>
                             Participa 
                         </Typography>
-                        <Link component={RouterLink} to="/registro" color="inherit" display="block" sx={footerLinkStyle}>Registrarse</Link>
+                        <Link component={RouterLink} to="/registro-miembro" color="inherit" display="block" sx={footerLinkStyle}>Registrarse</Link>
                         <Link component={RouterLink} to="/login" color="inherit" display="block" sx={footerLinkStyle}>Iniciar Sesión</Link>
                         <Link href="#" color="inherit" display="block" sx={footerLinkStyle}>¿Cómo ser miembro?</Link> {/* Enlace futuro */}
                         <Link href="#" color="inherit" display="block" sx={footerLinkStyle}>Voluntariado</Link> {/* Enlace futuro */}

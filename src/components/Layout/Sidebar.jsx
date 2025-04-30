@@ -29,7 +29,7 @@ const sidebarNavItems = [
         { name: 'Objeto y Fines', path: '/institucion/objeto-fines' },
       ]
     },
-    { id: 'registro', name: 'Registro', path: '/registro', icon: <HowToRegIcon />, bgColor: colors.teal[500], textColor: '#fff' }, // Enlace directo (o abre modal?)
+    { id: 'registro', name: 'Registro', path: '/registro-miembro', icon: <HowToRegIcon />, bgColor: colors.teal[500], textColor: '#fff' }, // Enlace directo (o abre modal?)
     {
       id: 'federaciones_dptales', name: 'Fede. Dptales.', icon: <MapIcon />, bgColor: colors.green[600], textColor: '#fff', // Nombre corto
       subItems: [
