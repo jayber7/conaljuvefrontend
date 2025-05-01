@@ -94,9 +94,10 @@ const BannerSlider = () => {
                                 position: 'absolute',
                                 top: 0, left: 0, right: 0, bottom: 0,
                                 backgroundImage: `url(${banner.imageUrl})`,
-                                backgroundSize: 'cover',
+                                backgroundSize: 'contain',
                                 backgroundPosition: 'center center',
-                                zIndex: -1,
+                                // backgroundRepeat: 'no-repeat',
+                                zIndex: 1,
                             }}
                         />
                          {/* Overlay oscuro para legibilidad */}

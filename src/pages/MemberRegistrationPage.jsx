@@ -23,6 +23,7 @@ import DeleteIcon from '@mui/icons-material/Delete'; // Para quitar foto
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import jsPDF from 'jspdf';
 // import CameraModal from '../components/Auth/CameraModal'; // Asumiendo que tienes este modal
+const DEFAULT_MEMBER_ROLE_CODE = 21; // <-- ¡¡AJUSTA ESTE CÓDIGO!!
 
 const MemberRegistrationPage = () => {
     const navigate = useNavigate();
@@ -39,6 +40,8 @@ const MemberRegistrationPage = () => {
     const fileInputRef = useRef(null); // <-- Ref para input file
     const [cameraModalOpen, setCameraModalOpen] = useState(false); // <-- Estado modal cámara
     const [anchorElPhotoMenu, setAnchorElPhotoMenu] = useState(null); // <-- Estado menú avatar
+    const [councilRoles, setCouncilRoles] = useState([]); // <-- NUEVO ESTADO
+    const [loadingRoles, setLoadingRoles] = useState(false); // <-- NUEVO ESTADO
     // const [cameraStream, setCameraStream] = useState(null); // Manejado dentro de CameraModal
     // const videoRef = useRef(null);
     // const canvasRef = useRef(null);
@@ -51,11 +54,11 @@ const MemberRegistrationPage = () => {
             idCard: '',
             idCardExtension: '',
             birthDate: null,
-            gender: '',
+            sex: '',
             phoneNumber: '',
             location: { departmentCode: '', provinceCode: '', municipalityCode: '', zone: '' },
             neighborhoodCouncilName: '',
-            memberRoleInCouncil: '',
+            memberRoleInCouncilCode: DEFAULT_MEMBER_ROLE_CODE,
             memberPhoto: null, // Para el archivo de foto
         }
     });
@@ -65,15 +68,26 @@ const MemberRegistrationPage = () => {
 
      // --- Fetch Ubicaciones (Similar a modales anteriores) ---
      useEffect(() => {
-        const fetchDepartments = async () => {
+        const fetchData  = async () => {
             setLoadingLocation(prev => ({ ...prev, dep: true }));
+            setLoadingRoles(true); // Iniciar carga roles
             try {
-                const response = await api.get('/locations/departments');
-                setDepartments(response.data.data.departments || []);
-            } catch (err) { console.error("Error fetching departments:", err); setError("No se pudieron cargar los departamentos.");}
-            finally { setLoadingLocation(prev => ({ ...prev, dep: false }));}
+                // Ejecutar en paralelo
+                const [deptRes, rolesRes] = await Promise.all([
+                    api.get('/locations/departments'),
+                    api.get('/locations/council-roles') // <-- Llamar a nueva API
+                ]);
+                setDepartments(deptRes.data.data.departments || []);
+                setCouncilRoles(rolesRes.data.data.councilRoles || []); // <-- Guardar roles
+            } catch (err) {
+                 console.error("Error fetching initial data:", err);
+                 setError("No se pudieron cargar datos necesarios (departamentos o cargos).");
+            } finally {
+                setLoadingLocation(prev => ({ ...prev, dep: false }));
+                setLoadingRoles(false); // Finalizar carga roles
+            }
         };
-        fetchDepartments();
+        fetchData();
      }, []); // Cargar solo una vez
 
    useEffect(() => { // Fetch Provincias
@@ -232,15 +246,15 @@ const MemberRegistrationPage = () => {
         formData.append('idCard', data.idCard);
         formData.append('idCardExtension', data.idCardExtension);
         if (data.birthDate) formData.append('birthDate', data.birthDate.toISOString().split('T')[0]);
-        const genderValue = data.gender === 'male' ? true : (data.gender === 'female' ? false : undefined);
-        if (genderValue !== undefined) formData.append('gender', genderValue);
+        const sexValue = data.sex === 'male' ? true : (data.sex === 'female' ? false : undefined);
+        if (sexValue !== undefined) formData.append('sex', sexValue);
         if (data.phoneNumber) formData.append('phoneNumber', data.phoneNumber);
         formData.append('location[departmentCode]', Number(data.location.departmentCode));
         formData.append('location[provinceCode]', Number(data.location.provinceCode));
         formData.append('location[municipalityCode]', Number(data.location.municipalityCode));
         formData.append('location[zone]', data.location.zone);
         formData.append('neighborhoodCouncilName', data.neighborhoodCouncilName);
-        formData.append('memberRoleInCouncil', data.memberRoleInCouncil);
+        formData.append('memberRoleInCouncilCode', Number(data.memberRoleInCouncilCode));
         if (data.memberPhoto instanceof File) {
             console.log("Añadiendo memberPhoto al FormData:", data.memberPhoto.name); // DEBUG
             formData.append('memberPhoto', data.memberPhoto); // 'memberPhoto' debe coincidir con upload.single()
@@ -254,20 +268,21 @@ const MemberRegistrationPage = () => {
             });
             // Guardar datos para el PDF y mostrar mensaje éxito
             const regData = response.data.data;
+            // --- Construir dataForPdf buscando nombres ---
              const dataForPdf = {
                 fullName: regData.fullName,
                 registrationCode: regData.registrationCode,
                 idCard: regData.idCard,
                 idCardExtension: data.idCardExtension ? (departments.find(d => d.code == data.idCardExtension)?.abbreviation || data.idCardExtension) : '', // Mostrar abreviatura si se puede
                 birthDate: data.birthDate ? data.birthDate.toLocaleDateString('es-ES') : 'No especificado',
-                gender: data.gender === 'male' ? 'Varón' : (data.gender === 'female' ? 'Mujer' : 'No especificado'),
+                sex: data.sex === 'male' ? 'Masculino' : (data.sex === 'female' ? 'Femenino' : 'No especificado'),
                 phoneNumber: data.phoneNumber || 'No especificado',
                 departmentName: departments.find(d => d.code == data.location.departmentCode)?.name || '',
                 provinceName: provinces.find(p => p.code == data.location.provinceCode)?.name || '',
                 municipalityName: municipalities.find(m => m.code == data.location.municipalityCode)?.name || '',
-                zone: data.location.zone,
-                neighborhoodCouncilName: data.neighborhoodCouncilName,
-                memberRoleInCouncil: data.memberRoleInCouncil,
+                zone: data.location.zone  || data.location.zone, // Usar el dato guardado o el del form,
+                neighborhoodCouncilName: data.neighborhoodCouncilName || data.neighborhoodCouncilName,
+                memberRoleInCouncilName: councilRoles.find(r => r.code == data.memberRoleInCouncilCode)?.name || `Código ${regData.memberRoleInCouncilCode}`,
                 registrationDate: new Date().toLocaleString('es-ES'),
                 photoDataUrl: profilePicPreview // Guardar la URL de la preview
 
@@ -335,7 +350,7 @@ const MemberRegistrationPage = () => {
         addLine('Nombre Completo', successData.fullName);
         addLine('CI', `${successData.idCard || ''} ${successData.idCardExtension || ''}`);
         addLine('Fecha de Nacimiento', successData.birthDate);
-        addLine('Género', successData.gender);
+        addLine('Género', successData.sex);
         addLine('Carnet de Identidad', successData.idCard);
         addLine('Número de Celular', successData.phoneNumber);
         currentY += lineHeight * 0.5; // Espacio extra
@@ -349,7 +364,7 @@ const MemberRegistrationPage = () => {
         doc.setFont(undefined, 'bold'); doc.text('Información de Junta:', margin, currentY);
         currentY += lineHeight; doc.setFont(undefined, 'normal');
         addLine('Junta Vecinal', successData.neighborhoodCouncilName); 
-        addLine('Cargo', successData.memberRoleInCouncil);
+        addLine('Cargo en Junta', successData.memberRoleInCouncilName);
         currentY += lineHeight; // Espacio extra
         // ... (lógica para añadir título, datos de successData con addLine) ...
          doc.setFontSize(10);
@@ -400,12 +415,12 @@ const MemberRegistrationPage = () => {
                              <Paper sx={{ p: 2.5 }} variant="outlined">
                                   <Typography variant="h6" gutterBottom>Datos Personales</Typography>
                                   <Grid container spacing={2}>
-                                       <Grid item xs={12}><TextField fullWidth size="small" label="Nombre Completo*" {...register("fullName", { required: true })} error={!!errors.fullName} helperText={errors.fullName?.message} disabled={loading}/> </Grid>
-                                       <Grid item xs={12} sm={7}><TextField fullWidth size="small" label="Carnet Identidad*" {...register("idCard", { required: true })} error={!!errors.idCard} helperText={errors.idCard?.message} disabled={loading}/> </Grid>
-                                       <Grid item xs={12} sm={5}><FormControl required fullWidth size="small" error={!!errors.idCardExtension} disabled={loading}><InputLabel>Extensión*</InputLabel><Controller name="idCardExtension" rules={{ required: true}} control={control} render={({ field }) => ( <Select label="Extensión*" {...field}> <MenuItem value=""><em>--</em></MenuItem> {departments.map((dept) => ( <MenuItem key={dept.code} value={dept.code}>{dept.abbreviation || dept.code}</MenuItem> ))} </Select> )}/></FormControl> </Grid>
-                                       <Grid item xs={12} sm={6}><Controller name="birthDate" control={control} render={({ field }) => (<DatePicker slotProps={{ textField: { fullWidth: true, size: 'small', error: !!errors.birthDate, helperText: errors.birthDate?.message } }} label="Fecha Nacimiento" {...field} value={field.value || null} disabled={loading} disableFuture/> )}/> </Grid>
-                                       <Grid item xs={12} sm={6}><FormControl fullWidth size="small" error={!!errors.gender} disabled={loading}><InputLabel>Género</InputLabel><Controller name="gender" control={control} render={({ field }) => (<Select label="Género" {...field}><MenuItem value=""><em>(Opcional)</em></MenuItem><MenuItem value="male">Varón</MenuItem><MenuItem value="female">Mujer</MenuItem></Select>)} /></FormControl> </Grid>
-                                       <Grid item xs={12}><TextField fullWidth size="small" label="Número Celular (Opcional)" {...register("phoneNumber")} error={!!errors.phoneNumber} helperText={errors.phoneNumber?.message} disabled={loading}/> </Grid>
+                                       <Grid item xs={12}><TextField fullWidth size="small" label="Nombre Completo*" {...register("fullName", { required: true })} error={!!errors.fullName} helperText={errors.fullName?.message} disabled={loading} slotProps={{ inputLabel: { shrink: true }}}/> </Grid>
+                                       <Grid item xs={12} sm={7}><TextField fullWidth size="small" label="Carnet Identidad*" {...register("idCard", { required: true })} error={!!errors.idCard} helperText={errors.idCard?.message} disabled={loading} slotProps={{ inputLabel: { shrink: true }}}/> </Grid>
+                                       <Grid item xs={12} sm={5} style={{ width: '10%' }}><FormControl required fullWidth size="small" error={!!errors.idCardExtension} disabled={loading}><InputLabel shrink={true}>Extendido</InputLabel><Controller name="idCardExtension" rules={{ required: true}} control={control} render={({ field }) => ( <Select label="Extensión*" {...field}> <MenuItem value=""><em>--</em></MenuItem> {departments.map((dept) => ( <MenuItem key={dept.code} value={dept.code}>{dept.abbreviation || dept.code}</MenuItem> ))} </Select> )}/></FormControl> </Grid>
+                                       <Grid item xs={12} sm={6}><Controller name="birthDate" control={control} render={({ field }) => (<DatePicker slotProps={{ textField: { fullWidth: true, size: 'small', error: !!errors.birthDate, helperText: errors.birthDate?.message, InputLabelProps: { shrink: true }}}} label="Fecha de Nacimiento" {...field} value={field.value || null} disabled={loading} disableFuture/> )}/> </Grid>
+                                       <Grid item xs={12} sm={6} style={{ width: '10%' }}><FormControl fullWidth size="small" error={!!errors.sex} disabled={loading}><InputLabel shrink={true}>Sexo</InputLabel><Controller name="sex" control={control} render={({ field }) => (<Select label="Sexo" {...field}><MenuItem value=""><em>(Opcional)</em></MenuItem><MenuItem value="male">Masculino</MenuItem><MenuItem value="female">Femenino</MenuItem></Select>)} /></FormControl> </Grid>
+                                       <Grid item xs={12}><TextField fullWidth size="small" label="Número Celular (Opcional)" {...register("phoneNumber")} error={!!errors.phoneNumber} helperText={errors.phoneNumber?.message} disabled={loading} slotProps={{ inputLabel: { shrink: true }}}/> </Grid>
                                    </Grid>
                              </Paper>
                          </Grid>
@@ -483,13 +498,42 @@ const MemberRegistrationPage = () => {
                               <Paper sx={{ p: 2.5 }} variant="outlined">
                                   <Typography variant="h6" gutterBottom>Información de Junta Vecinal y Ubicación</Typography>
                                   <Grid container spacing={2}>
-                                       <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Nombre Junta Vecinal*" {...register("neighborhoodCouncilName", { required: true })} error={!!errors.neighborhoodCouncilName} helperText={errors.neighborhoodCouncilName?.message} disabled={loading}/></Grid>
-                                       <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Cargo en la Junta*" {...register("memberRoleInCouncil", { required: true })} error={!!errors.memberRoleInCouncil} helperText={errors.memberRoleInCouncil?.message} disabled={loading}/></Grid>
-                                       <Grid item xs={12}> <Divider sx={{ my: 1 }}><Typography variant="caption">Ubicación de la Junta*</Typography></Divider></Grid>
-                                       <Grid item xs={12} sm={6}><FormControl required fullWidth size="small" error={!!errors.location?.departmentCode} disabled={loadingLocation.dep || loading}><InputLabel>Departamento*</InputLabel><Controller name="location.departmentCode" rules={{ required: true}} control={control} render={({ field }) => ( <Select label="Departamento*" {...field} ><MenuItem value=""><em>Seleccione...</em></MenuItem>{departments.map(d => <MenuItem key={d.code} value={d.code}>{d.name}</MenuItem>)}</Select> )}/></FormControl> </Grid>
-                                       <Grid item xs={12} sm={6}><FormControl required fullWidth size="small" error={!!errors.location?.provinceCode} disabled={!selectedDepartmentCode || loadingLocation.prov || loading}><InputLabel>Provincia*</InputLabel><Controller name="location.provinceCode" rules={{ required: true}} control={control} render={({ field }) => ( <Select label="Provincia*" {...field} ><MenuItem value=""><em>Seleccione...</em></MenuItem>{provinces.map(p => <MenuItem key={p.code} value={p.code}>{p.name}</MenuItem>)}</Select> )}/></FormControl> </Grid>
-                                       <Grid item xs={12} sm={6}><FormControl required fullWidth size="small" error={!!errors.location?.municipalityCode} disabled={!selectedProvinceCode || loadingLocation.mun || loading}><InputLabel>Municipio*</InputLabel><Controller name="location.municipalityCode" rules={{ required: true}} control={control} render={({ field }) => ( <Select label="Municipio*" {...field} ><MenuItem value=""><em>Seleccione...</em></MenuItem>{municipalities.map(m => <MenuItem key={m.code} value={m.code}>{m.name}</MenuItem>)}</Select> )}/></FormControl> </Grid>
-                                       <Grid item xs={12} sm={6}><TextField required fullWidth label="Zona / Barrio*" size="small" {...register("location.zone", { required: true })} error={!!errors.location?.zone} helperText={errors.location?.zone?.message} disabled={loading} /></Grid>
+                                       <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="Nombre Junta Vecinal*" {...register("neighborhoodCouncilName", { required: true })} error={!!errors.neighborhoodCouncilName} helperText={errors.neighborhoodCouncilName?.message} disabled={loading} slotProps={{ inputLabel: { shrink: true } }}/></Grid>
+                                       <Grid item xs={12} sm={6} style={{ width: '15%' }}>
+                                                <FormControl required fullWidth size="small" error={!!errors.memberRoleInCouncilCode} disabled={loading || loadingRoles}>
+                                                    <InputLabel shrink={true} id="council-role-label">Cargo en la Junta*</InputLabel>
+                                                    <Controller
+                                                        name="memberRoleInCouncilCode" // <-- Usar Code
+                                                        control={control}
+                                                        rules={{ required: 'Seleccione un cargo' }}
+                                                        render={({ field }) => (
+                                                            <Select
+                                                                labelId="council-role-label"
+                                                                label="Cargo en la Junta*"
+                                                                {...field} // field.value será el NÚMERO
+                                                            >
+                                                                <MenuItem value="">
+                                                                    <em>{loadingRoles ? 'Cargando...' : 'Seleccione...'}</em>
+                                                                </MenuItem>
+                                                                {/* Mapear councilRoles */}
+                                                                {councilRoles.map((role) => (
+                                                                    // value es role.code, texto es role.name
+                                                                    <MenuItem key={role.code} value={role.code}>
+                                                                        {role.name}
+                                                                    </MenuItem>
+                                                                ))}
+                                                            </Select>
+                                                        )}
+                                                    />
+                                                    {errors.memberRoleInCouncilCode && <FormHelperText error>{errors.memberRoleInCouncilCode.message}</FormHelperText>}
+                                                </FormControl>
+                                           </Grid>
+                                       <Divider/>
+                                       <Divider/>
+                                       <Grid item xs={12} sm={6}  style={{ width: '15%' }}><FormControl required fullWidth size="small" error={!!errors.location?.departmentCode} disabled={loadingLocation.dep || loading}><InputLabel shrink={true}>Departamento*</InputLabel><Controller name="location.departmentCode" rules={{ required: true}} control={control} render={({ field }) => ( <Select label="Departamento*" {...field} ><MenuItem value=""><em>Seleccione...</em></MenuItem>{departments.map(d => <MenuItem key={d.code} value={d.code}>{d.name}</MenuItem>)}</Select> )}/></FormControl> </Grid>
+                                       <Grid item xs={12} sm={6}  style={{ width: '15%' }}><FormControl required fullWidth size="small" error={!!errors.location?.provinceCode} disabled={!selectedDepartmentCode || loadingLocation.prov || loading}><InputLabel shrink={true}>Provincia*</InputLabel><Controller name="location.provinceCode" rules={{ required: true}} control={control} render={({ field }) => ( <Select label="Provincia*" {...field} ><MenuItem value=""><em>Seleccione...</em></MenuItem>{provinces.map(p => <MenuItem key={p.code} value={p.code}>{p.name}</MenuItem>)}</Select> )}/></FormControl> </Grid>
+                                       <Grid item xs={12} sm={6}  style={{ width: '15%' }}><FormControl required fullWidth size="small" error={!!errors.location?.municipalityCode} disabled={!selectedProvinceCode || loadingLocation.mun || loading}><InputLabel shrink={true}>Municipio*</InputLabel><Controller name="location.municipalityCode" rules={{ required: true}} control={control} render={({ field }) => ( <Select label="Municipio*" {...field} ><MenuItem value=""><em>Seleccione...</em></MenuItem>{municipalities.map(m => <MenuItem key={m.code} value={m.code}>{m.name}</MenuItem>)}</Select> )}/></FormControl> </Grid>
+                                       <Grid item xs={12} sm={6} ><TextField required fullWidth label="Zona / Barrio*" size="small" {...register("location.zone", { required: true })} error={!!errors.location?.zone} helperText={errors.location?.zone?.message} disabled={loading} slotProps={{ inputLabel: { shrink: true } }}/></Grid>
                                    </Grid>
                               </Paper>
                          </Grid>

@@ -58,7 +58,7 @@ const { register, handleSubmit, control, watch, setValue, reset, formState: { er
         //   confirmPassword: '',
           location: { departmentCode: '', provinceCode: '', municipalityCode: '', zone: '' },
           birthDate: null, // Usar null para DatePicker
-          gender: '', // Usar '' para Select y manejar opción 'Seleccionar'
+          sex: '', // Usar '' para Select y manejar opción 'Seleccionar'
           //profilePictureUrl: '', // Opcional
           idCard: '',
           idCardExtension: '',
@@ -382,7 +382,7 @@ useEffect(() => {
                 zone: user.location?.zone || ''
             },
             birthDate: user.birthDate ? new Date(user.birthDate) : null,
-            gender: typeof user.gender === 'boolean' ? (user.gender ? 'male' : 'female') : '',
+            sex: typeof user.sex === 'boolean' ? (user.sex ? 'male' : 'female') : '',
             idCard: user.idCard || '',
             idCardExtension: user.idCardExtension || '',
             phoneNumber: user.phoneNumber || '',
@@ -409,7 +409,7 @@ useEffect(() => {
                  zone: data.location.zone || undefined,
              },
              birthDate: data.birthDate ? data.birthDate.toISOString().split('T')[0] : undefined,
-             gender: data.gender === 'male' ? true : (data.gender === 'female' ? false : undefined),
+             sex: data.sex === 'male' ? true : (data.sex === 'female' ? false : undefined),
              idCard: data.idCard || undefined,
              idCardExtension: data.idCardExtension || undefined,
              phoneNumber: data.phoneNumber || undefined,
@@ -432,7 +432,7 @@ useEffect(() => {
             username: user?.username || userJustSaved.email, // Obtener username del contexto si no viene del form
             email: user?.email || userJustSaved.email, // Email no suele cambiar aquí
             birthDate: userJustSaved.birthDate ? new Date(userJustSaved.birthDate).toLocaleDateString('es-ES') : 'No especificada',
-            gender: userJustSaved.gender === true ? 'Varón' : (userJustSaved.gender === false ? 'Mujer' : 'No especificado'), // Usa el booleano
+            sex: userJustSaved.sex === true ? 'Masculino' : (userJustSaved.sex === false ? 'Femenino' : 'No especificado'), // Usa el booleano
             idCard: userJustSaved.idCard || 'No especificado',
             idCardExtension: userJustSaved.idCardExtension || '',
             phoneNumber: userJustSaved.phoneNumber || 'No especificado',
@@ -494,7 +494,7 @@ const generatePdf = () => {
     addLine('Nombre de Usuario', pdfData.username);
     addLine('Correo Electrónico', pdfData.email);
     addLine('Fecha de Nacimiento', pdfData.birthDate);
-    addLine('Género', pdfData.gender);
+    addLine('Sexo', pdfData.sex);
     addLine('Carnet de Identidad', pdfData.idCard);
     addLine('Número de Celular', pdfData.phoneNumber);
 
@@ -684,13 +684,13 @@ const styles = {
                                 <Grid container spacing={1}>
                                     <Grid item xs={12} sm={7}><Controller name="birthDate" control={control} render={({ field }) => (<DatePicker slotProps={{ textField: { fullWidth: true,  size: 'small', error: !!errors.birthDate, helperText: errors.birthDate?.message,  InputLabelProps: { shrink: true } } }} label="Fecha Nacimiento" {...field} value={field.value || null} disabled={loading} disableFuture/> )}/> </Grid>
                                     <Grid item xs={12} sm={5} style={{ width: '10%' }}>
-                                        <FormControl fullWidth size="small" error={!!errors.gender} disabled={loading}>
-                                            <InputLabel shrink={true} id="gender-label">Género</InputLabel>
-                                            <Controller name="gender" control={control} render={({ field }) => (
-                                                <Select label="Género" {...field} style={{ width: '100%' }}>
+                                        <FormControl fullWidth size="small" error={!!errors.sex} disabled={loading}>
+                                            <InputLabel shrink={true} id="gender-label">Sexo</InputLabel>
+                                            <Controller name="sex" control={control} render={({ field }) => (
+                                                <Select label="Sexo" {...field} style={{ width: '100%' }}>
                                                     <MenuItem value=""><em>(Opcional)</em></MenuItem>
-                                                    <MenuItem value="male">Varón</MenuItem>
-                                                    <MenuItem value="female">Mujer</MenuItem>
+                                                    <MenuItem value="male">Masculino</MenuItem>
+                                                    <MenuItem value="female">Femenino</MenuItem>
                                                 </Select>)}/>
                                         </FormControl> 
                                     </Grid>

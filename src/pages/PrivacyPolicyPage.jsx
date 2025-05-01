@@ -142,7 +142,7 @@ const PrivacyPolicyPage = () => {
       <Box>
         <Typography variant="h4" component="h2" gutterBottom>10. Contacto</Typography>
         <Typography paragraph>
-            Si tienes alguna pregunta sobre esta Política de Privacidad, por favor contáctanos en: <Link href={`mailto:${contactEmail}`}>{contactEmail}</Link>
+            Si tienes alguna pregunta sobre esta Política de Privacidad, por favor contáctanos en: <Link href={`mailto:${contactEmail}`}>{contactEmail} </Link> Dirección: calle 16 de Julio casi La Paz
         </Typography>
       </Box>
 

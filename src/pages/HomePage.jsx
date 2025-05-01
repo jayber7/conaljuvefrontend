@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Container, Grid, Typography, CircularProgress, Alert, Pagination, Stack, Select, MenuItem, FormControl, InputLabel, Paper } from '@mui/material';
+import React, { useState, useEffect, useCallback, RouterLink  } from 'react';
+import { Box, Container, Button, Grid, Typography, CircularProgress, Alert, Pagination, Stack, Select, MenuItem, FormControl, InputLabel, Paper } from '@mui/material';
 import NewsCard from '../components/News/NewsCard'; // Crear este componente
 import api from '../services/api';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+
 //import bannerConaljuve from '../assets/BannerCONALJUVE.png';
 const HomePage = () => {
   const [news, setNews] = useState([]);
@@ -104,10 +106,21 @@ const HomePage = () => {
             </Box>
       
       {/* --- TITULO PRINCIPAL --- */}
-      <Typography variant="h3" component="h3" sx={{ textAlign: 'center', mb: 4 }} >
+      <Typography variant="h3" component="h3" sx={{  ml: 2, whiteSpace: 'nowrap' }} >
         Últimas Noticias
       </Typography>
-
+      <Button
+                    variant="contained" // O prueba "outlined"
+                    color="secondary"    // O "secondary" si quieres destacarlo más
+                    component={RouterLink}
+                    to="/registro-miembro" // <-- Ruta a tu página de registro de miembro
+                    size="medium" // Tamaño normal o "large" si prefieres
+                    startIcon={<AddCircleOutlineIcon />} // Icono opcional
+                    sx={{  ml: 2, whiteSpace: 'nowrap' }}
+                    // Margen superior para separarlo del título
+                >
+                    Registrarse como Miembro
+                </Button>
       {/* --- Filtros y Ordenamiento (Dentro de un Paper) --- */}
       <Paper elevation={1} sx={{ p: 2, mb: 4, bgcolor: 'background.paper' }}> {/* Fondo blanco, sombra ligera */}
           <Grid container spacing={2} alignItems="center">

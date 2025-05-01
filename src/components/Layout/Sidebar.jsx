@@ -33,35 +33,50 @@ const sidebarNavItems = [
     {
       id: 'federaciones_dptales', name: 'Fede. Dptales.', icon: <MapIcon />, bgColor: colors.green[600], textColor: '#fff', // Nombre corto
       subItems: [
-        { name: 'Chuquisaca', path: '/federaciones/dptales/chuquisaca' },
-        { name: 'La Paz', path: '/federaciones/dptales/la-paz' },
-        { name: 'Cochabamba', path: '/federaciones/dptales/cochabamba' },
-        { name: 'Oruro', path: '/federaciones/dptales/oruro' },
-        { name: 'Potosí', path: '/federaciones/dptales/potosi' },
-        { name: 'Tarija', path: '/federaciones/dptales/tarija' },
-        { name: 'Santa Cruz', path: '/federaciones/dptales/santa-cruz' },
-        { name: 'Beni', path: '/federaciones/dptales/beni' },
-        { name: 'Pando', path: '/federaciones/dptales/pando' },
-        // { name: 'Directorio Nacional', path: '/federaciones/dptales/directorio' }, // ¿General?
-        // { name: 'Estatuto Marco', path: '/federaciones/dptales/estatuto' }, // ¿General?
+        { name: 'Chuquisaca', path: '/federaciones/dptales/ch' },
+        { name: 'La Paz', path: '/federaciones/dptales/lp' },
+        { name: 'Cochabamba', path: '/federaciones/dptales/cb' },
+        { name: 'Oruro', path: '/federaciones/dptales/or' },
+        { name: 'Potosí', path: '/federaciones/dptales/pt' },
+        { name: 'Tarija', path: '/federaciones/dptales/tj' },
+        { name: 'Santa Cruz', path: '/federaciones/dptales/sc' },
+        { name: 'Beni', path: '/federaciones/dptales/be' },
+        { name: 'Pando', path: '/federaciones/dptales/pa' },
+        { name: 'Directorio Nacional', path: '/federaciones/dptales/directorio' }, // ¿General?
+        { name: 'Estatuto Orgánico', path: '/federaciones/dptales/estatuto' }, // ¿General?
       ]
     },
     {
       id: 'federaciones_muni', name: 'Fede. Muni.', icon: <LocationCityIcon />, bgColor: colors.cyan[600], textColor: '#fff', // Nombre corto
       subItems: [
-        { name: 'Chuquisaca', path: '/federaciones/muni/chuquisaca' },
-        { name: 'La Paz', path: '/federaciones/muni/la-paz' },
-         // ... (resto de departamentos) ...
-        { name: 'Pando', path: '/federaciones/muni/pando' },
+        { name: 'Chuquisaca', path: '/federaciones/muni/ch' },
+        { name: 'La Paz', path: '/federaciones/muni/lp' },
+        { name: 'Cochabamba', path: '/federaciones/muni/cb' }, 
+        { name: 'Oruro', path: '/federaciones/muni/or' },
+        { name: 'Potosí', path: '/federaciones/muni/pt' },
+        { name: 'Tarija', path: '/federaciones/muni/tj' },
+        { name: 'Santa Cruz', path: '/federaciones/muni/sc' },
+        { name: 'Beni', path: '/federaciones/muni/be' },
+        { name: 'Pando', path: '/federaciones/muni/pa' },
+        { name: 'Directorio Nacional', path: '/federaciones/muni/directorio' }, // ¿General?
+        { name: 'Estatuto Orgánico', path: '/federaciones/muni/estatuto' }, // ¿General?
+        
       ]
     },
       {
       id: 'coordinadoras', name: 'Coord.', icon: <ConnectWithoutContactIcon />, bgColor: colors.indigo[500], textColor: '#fff', // Nombre corto
       subItems: [
-        { name: 'Chuquisaca', path: '/coordinadoras/chuquisaca' },
-        { name: 'La Paz', path: '/coordinadoras/la-paz' },
-         // ... (resto de departamentos) ...
-        { name: 'Pando', path: '/coordinadoras/pando' },
+        { name: 'Chuquisaca', path: '/coordinadoras/ch' },
+        { name: 'La Paz', path: '/coordinadoras/lp' },
+        { name: 'Cochabamba', path: '/coordinadoras/cb' },
+        { name: 'Oruro', path: '/coordinadoras/or' },
+        { name: 'Potosí', path: '/coordinadoras/pt' },
+        { name: 'Tarija', path: '/coordinadoras/tj' },
+        { name: 'Santa Cruz', path: '/coordinadoras/sc' },
+        { name: 'Beni', path: '/coordinadoras/be' },
+        { name: 'Pando', path: '/coordinadoras/pd' },
+        { name: 'Directorio Nacional', path: '/coordinadoras/directorio' }, // ¿General?
+        { name: 'Estatuto Orgánico', path: '/coordinadoras/estatuto' }, // ¿General?
       ]
     },
     {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import HomePage from './pages/HomePage';
 import NewsDetailPage from './pages/NewsDetailPage';
@@ -13,21 +13,24 @@ import CompleteProfileModal from './components/Auth/CompleteProfileModal';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage'; // Ajusta ruta si es necesario
 import TermsOfServicePage from './pages/TermsOfServicePage'; // Ajusta ruta
 import MemberRegistrationPage from './pages/MemberRegistrationPage';
-
+import InstitutionPage from './pages/institution/InstitutionPage';
+import FederationListPage from './pages/federations/FederationListPage';
+import FederationDetailPage from './pages/federations/FederationDetailPage';
 function App() {
   return (
     <Routes>
       <Route element={<MainLayout />}> {/* Layout persistente */}
         <Route index element={<HomePage />} />
+        <Route path="/sobre-conaljuve" element={<AboutPage />} /> {/* Ruta específica */}
         <Route path="/noticia/:id" element={<NewsDetailPage />} />
         <Route path="/sobre-conaljuve" element={<AboutPage />} />
         {/* --- RUTAS PARA COMITÉS --- */}
         {/* Opción A: Usar un componente genérico pasando el tipo */}
-        <Route path="/comites/juventud" element={<CommitteePage committeeId="juventud" />} />
+        {/* <Route path="/comites/juventud" element={<CommitteePage committeeId="juventud" />} />
         <Route path="/comites/profesionales" element={<CommitteePage committeeId="profesionales" />} />
         <Route path="/comites/mujeres" element={<CommitteePage committeeId="mujeres" />} />
         <Route path="/comites/salud" element={<CommitteePage committeeId="salud" />} />
-        <Route path="/comites/aliados" element={<CommitteePage committeeId="aliados" />} />
+        <Route path="/comites/aliados" element={<CommitteePage committeeId="aliados" />} /> */}
         {/* Ruta protegida para Admin */}
         <Route
           path="/admin"
@@ -53,7 +56,25 @@ function App() {
               </ProtectedRoute>
            }
          />
-                 <Route path="/registro-miembro" element={<MemberRegistrationPage />} /> {/* Ruta pública */}
+        <Route path="/institucion" element={<Navigate to="/sobre-conaljuve" replace />} />
+        <Route path="/institucion/:sectionId" element={<InstitutionPage />} />
+        <Route path="/registro-miembro" element={<MemberRegistrationPage />} /> {/* Ruta pública */}
+        {/* Páginas de Listado */}
+        <Route path="/federaciones" element={<Navigate to="/federaciones/dptales" replace />} />
+         <Route path="/federaciones/dptales" element={<FederationListPage type="dptales" title="Federaciones Departamentales"/>} />
+         <Route path="/federaciones/muni" element={<FederationListPage type="muni" title="Federaciones Municipales"/>} />
+         <Route path="/coordinadoras" element={<FederationListPage type="coord" title="Coordinadoras Departamentales"/>} />
+         {/* Páginas de Detalle */}
+         <Route path="/federaciones/dptales/:deptId" element={<FederationDetailPage type="dptales" />} />
+         <Route path="/federaciones/muni/:deptId" element={<FederationDetailPage type="muni" />} />
+         <Route path="/coordinadoras/:deptId" element={<FederationDetailPage type="coord" />} />
+          {/* Rutas específicas si las hay */}
+         <Route path="/federaciones/dptales/directorio" element={<InstitutionPage sectionId="directorio-nacional" />} /> {/* Ejemplo */}
+         <Route path="/federaciones/dptales/estatuto" element={<InstitutionPage sectionId="estatuto-fed-dptal" />} /> {/* Ejemplo */}
+         {/* --- Rutas Comités --- */}
+        {/* Redirigir /comites a la primera sección o crear página de listado */}
+        <Route path="/comites" element={<Navigate to="/comites/juventud" replace />} />
+        <Route path="/comites/:committeeId" element={<CommitteePage />} /> {/* Ya acepta ID */}
 
         <Route path="/politica-privacidad" element={<PrivacyPolicyPage />} />
         <Route path="/terminos-servicio" element={<TermsOfServicePage />} />
