@@ -84,9 +84,19 @@ const NavbarActions = ({ onOpenProfileModal }) => {
             ) : (
                  <Button
                     variant="contained"
-                    sx={{ bgcolor: 'blue', color: '#444', '&:hover': { bgcolor: '#f5f5f5'}, fontSize: '0.8rem', py: 0.8 }}
+                    color="secondary"                    
                     startIcon={<GoogleIcon />}
                     onClick={() => googleLogin()}
+                    sx={{
+                        // Asegurar buen contraste de texto sobre fondo amarillo/ámbar
+                        color: 'primary.dark', // O 'common.black' o un gris oscuro
+                        fontWeight: 'bold', // Mantener negrita si quieres
+                        fontSize: '0.8rem', // Tamaño ajustado
+                        py: 0.8, // Padding vertical ajustado
+                        // El color de hover vendrá del tema para 'containedSecondary' si lo definiste
+                        // Si no, puedes añadirlo aquí:
+                        // '&:hover': { bgcolor: amber[700] } // Ejemplo de hover más oscuro
+                    }}
                  >
                      Iniciar Sesión
                  </Button>
