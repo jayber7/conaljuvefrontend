@@ -16,6 +16,7 @@ import MemberRegistrationPage from './pages/MemberRegistrationPage';
 import InstitutionPage from './pages/institution/InstitutionPage';
 import FederationListPage from './pages/federations/FederationListPage';
 import FederationDetailPage from './pages/federations/FederationDetailPage';
+import ProjectPage from './pages/ProjectPage';
 function App() {
   return (
     <Routes>
@@ -75,7 +76,7 @@ function App() {
         {/* Redirigir /comites a la primera sección o crear página de listado */}
         <Route path="/comites" element={<Navigate to="/comites/juventud" replace />} />
         <Route path="/comites/:committeeId" element={<CommitteePage />} /> {/* Ya acepta ID */}
-
+        <Route path="/proyectos" element={<ProtectedRoute roles={['USER','STAFF', 'ADMIN']}><ProjectPage /></ProtectedRoute>} />
         <Route path="/politica-privacidad" element={<PrivacyPolicyPage />} />
         <Route path="/terminos-servicio" element={<TermsOfServicePage />} />
         {/* Cualquier otra ruta */}

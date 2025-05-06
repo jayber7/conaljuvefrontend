@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, Button, CircularProgress, Alert, IconButton, Tooltip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Container, Paper } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, Alert, IconButton, Tooltip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Container, Paper, Tabs, Tab } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'; // Poderosa tabla de MUI X
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -11,8 +11,36 @@ import { es } from 'date-fns/locale';
 import api from '../services/api';
 import NewsFormModal from '../components/Admin/NewsFormModal'; // Crear este componente
 import UserManagement from '../components/Admin/UserManagement'; // <-- Importar componente
+import MemberManagement from '../components/Admin/MemberManagement'; // <-- NUEVO: Gestión de Miembros
+
 import { useAuth } from '../contexts/AuthContext'; // Importar useAuth
 
+// --- Componente TabPanel (Helper) ---
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`admin-tabpanel-${index}`}
+      aria-labelledby={`admin-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ pt: 3 }}> {/* Padding top para separar del tab */}
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+}
+
+function a11yProps(index) {
+  return {
+    id: `admin-tab-${index}`,
+    'aria-controls': `admin-tabpanel-${index}`,
+  };
+}
 const AdminPage = () => {
   const { isAdmin, isStaff } = useAuth(); // Obtener roles
   const [news, setNews] = useState([]);
@@ -23,6 +51,7 @@ const AdminPage = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [newsToDelete, setNewsToDelete] = useState(null);
   const [loadingDelete, setLoadingDelete] = useState(false);
+  const [currentTab, setCurrentTab] = useState(0); // 0: Noticias, 1: Miembros, 2: Usuarios/Roles
 
   const navigate = useNavigate();
 
@@ -86,7 +115,16 @@ const AdminPage = () => {
          // setLoadingDelete(false); // Se resetea al cerrar o en error
     }
   };
- 
+   // --- Handlers Tabs ---
+   const handleTabChange = (event, newValue) => {
+    setCurrentTab(newValue);
+};
+// Fetch inicial de noticias (solo si la pestaña de noticias está activa?)
+    // O cargar siempre al inicio
+    useEffect(() => {
+      fetchNewsAdmin(); // Cargar noticias al montar la página admin
+ }, [fetchNewsAdmin]); // Asumiendo que fetchNewsAdmin está con useCallback
+
 
   // --- Columnas para DataGrid ---
   const columns = [
@@ -162,8 +200,22 @@ const AdminPage = () => {
 
   return (
     
-    <Container maxWidth="lg">
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Typography variant="h1" component="h1" gutterBottom>
+                Panel de Administración
+      </Typography>
+      {/* --- Tabs --- */}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+                <Tabs value={currentTab} onChange={handleTabChange} aria-label="Panel de administración">
+                    <Tab label="Gestionar Noticias" {...a11yProps(0)} />
+                     {/* Mostrar tabs de Miembros y Usuarios solo a Admin */}
+                    {isAdmin && <Tab label="Gestionar Miembros" {...a11yProps(1)} />}
+                    {isAdmin && <Tab label="Gestionar Usuarios/Roles" {...a11yProps(2)} />}
+                </Tabs>
+      </Box>
+       {/* --- Contenido Tab Noticias --- */}
+       <TabPanel value={currentTab} index={0}>
+       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h2" component="h1"  sx={{ flexGrow: 1, textAlign: 'center', mr: { xs: 0, sm: 2 } }} >
           Gestionar Noticias
         </Typography>
@@ -229,9 +281,27 @@ const AdminPage = () => {
             </Button>
           </DialogActions>
         </Dialog>
-        {/* --- SECCIÓN GESTIÓN DE USUARIOS --- */}
-        {isAdmin && <UserManagement />}
-        {/* --- FIN SECCIÓN --- */}
+        </TabPanel>
+        {/* --- Fin Tab Noticias --- */}
+
+
+            {/* --- Contenido Tab Miembros (Solo Admin) --- */}
+            {isAdmin && (
+                 <TabPanel value={currentTab} index={1}>
+                     <MemberManagement /> {/* Renderizar componente */}
+                 </TabPanel>
+             )}
+            {/* --- Fin Tab Miembros --- */}
+
+
+            {/* --- Contenido Tab Usuarios/Roles (Solo Admin) --- */}
+            {isAdmin && (
+                <TabPanel value={currentTab} index={2}>
+                    <UserManagement /> {/* Renderizar componente */}
+                </TabPanel>
+             )}
+             {/* --- Fin Tab Usuarios/Roles --- */}
+
     </Container>
   );
 };

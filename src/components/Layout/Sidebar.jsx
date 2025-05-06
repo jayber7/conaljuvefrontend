@@ -10,6 +10,8 @@ import MapIcon from '@mui/icons-material/Map';
 import LocationCityIcon from '@mui/icons-material/LocationCity'; // Para Municipales
 import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact'; // Para Coordinadoras
 import GroupsIcon from '@mui/icons-material/Groups';
+import AssignmentIcon from '@mui/icons-material/Assignment'; // Icono para Proyectos
+
 import { colors } from '@mui/material';
 
 // --- NUEVO TAMAÑO Y ESTILO ---
@@ -22,16 +24,17 @@ const sidebarNavItems = [
       id: 'institucion', name: 'Institución', icon: <AccountBalanceIcon />, bgColor: colors.deepOrange[500], textColor: '#fff',
       subItems: [
         { name: '¿Qué es CONALJUVE?', path: '/sobre-conaljuve' }, // Mover aquí
-        { name: 'Organigrama', path: '/institucion/organigrama' },
+        { name: 'COMITÉ EJECUTIVO NACIONAL (C.E.N.)', path: '/institucion/organigrama' },
         { name: 'Estatuto Orgánico', path: '/institucion/estatuto' },
         // { name: 'Estructura CONALJUVE', path: '/institucion/estructura' }, // Combinado o separado?
         { name: 'Visión y Misión', path: '/institucion/vision-mision' },
         { name: 'Objeto y Fines', path: '/institucion/objeto-fines' },
+        { name: 'Tribunal de honor y disiplinario', path: '/institucion/tribunal' },
       ]
     },
     { id: 'registro', name: 'Registro', path: '/registro-miembro', icon: <HowToRegIcon />, bgColor: colors.teal[500], textColor: '#fff' }, // Enlace directo (o abre modal?)
     {
-      id: 'federaciones_dptales', name: 'Fede. Dptales.', icon: <MapIcon />, bgColor: colors.green[600], textColor: '#fff', // Nombre corto
+      id: 'federaciones_dptales', name: 'Federaciones Departamentales', icon: <MapIcon />, bgColor: colors.green[600], textColor: '#fff', // Nombre corto
       subItems: [
         { name: 'Chuquisaca', path: '/federaciones/dptales/ch' },
         { name: 'La Paz', path: '/federaciones/dptales/lp' },
@@ -42,12 +45,11 @@ const sidebarNavItems = [
         { name: 'Santa Cruz', path: '/federaciones/dptales/sc' },
         { name: 'Beni', path: '/federaciones/dptales/be' },
         { name: 'Pando', path: '/federaciones/dptales/pa' },
-        { name: 'Directorio Nacional', path: '/federaciones/dptales/directorio' }, // ¿General?
-        { name: 'Estatuto Orgánico', path: '/federaciones/dptales/estatuto' }, // ¿General?
+       
       ]
     },
     {
-      id: 'federaciones_muni', name: 'Fede. Muni.', icon: <LocationCityIcon />, bgColor: colors.cyan[600], textColor: '#fff', // Nombre corto
+      id: 'federaciones_muni', name: 'Federaciones Municipales', icon: <LocationCityIcon />, bgColor: colors.cyan[600], textColor: '#fff', // Nombre corto
       subItems: [
         { name: 'Chuquisaca', path: '/federaciones/muni/ch' },
         { name: 'La Paz', path: '/federaciones/muni/lp' },
@@ -58,13 +60,12 @@ const sidebarNavItems = [
         { name: 'Santa Cruz', path: '/federaciones/muni/sc' },
         { name: 'Beni', path: '/federaciones/muni/be' },
         { name: 'Pando', path: '/federaciones/muni/pa' },
-        { name: 'Directorio Nacional', path: '/federaciones/muni/directorio' }, // ¿General?
-        { name: 'Estatuto Orgánico', path: '/federaciones/muni/estatuto' }, // ¿General?
+       
         
       ]
     },
       {
-      id: 'coordinadoras', name: 'Coord.', icon: <ConnectWithoutContactIcon />, bgColor: colors.indigo[500], textColor: '#fff', // Nombre corto
+      id: 'coordinadoras', name: 'Coordinadoras', icon: <ConnectWithoutContactIcon />, bgColor: colors.indigo[500], textColor: '#fff', // Nombre corto
       subItems: [
         { name: 'Chuquisaca', path: '/coordinadoras/ch' },
         { name: 'La Paz', path: '/coordinadoras/lp' },
@@ -75,8 +76,7 @@ const sidebarNavItems = [
         { name: 'Santa Cruz', path: '/coordinadoras/sc' },
         { name: 'Beni', path: '/coordinadoras/be' },
         { name: 'Pando', path: '/coordinadoras/pd' },
-        { name: 'Directorio Nacional', path: '/coordinadoras/directorio' }, // ¿General?
-        { name: 'Estatuto Orgánico', path: '/coordinadoras/estatuto' }, // ¿General?
+        
       ]
     },
     {
@@ -89,6 +89,7 @@ const sidebarNavItems = [
         { name: 'Aliados Estratégicos', path: '/comites/aliados' },
       ]
     },
+    { id: 'proyectos', name: 'Proyectos', path: '/proyectos', icon: <AssignmentIcon />, bgColor: colors.lime[600], textColor: '#fff' },
   ];
 // --- FIN DEFINIR ITEMS ---
 
@@ -249,7 +250,7 @@ const Sidebar = ({ topOffset = 0 }) => {
 
                     return (
                         <ListItem key={item.id} disablePadding sx={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
-                            <Tooltip title={item.name} placement="right">
+                            <Tooltip title={item.name} placement="bottom">
                                 <ListItemButton
                                     component={item.subItems ? 'button' : RouterNavLink} // Sigue siendo button si tiene subItems
                                     to={!item.subItems ? item.path : undefined}

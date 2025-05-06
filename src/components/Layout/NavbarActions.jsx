@@ -55,7 +55,10 @@ const NavbarActions = ({ onOpenProfileModal }) => {
                             <Avatar
                                 alt={user.name || user.username}
                                 src={user.profilePictureUrl || undefined}
-                                sx={{ bgcolor: 'secondary.main', width: 32, height: 32 }}
+                                sx={{
+                                    bgcolor: user.profilePictureUrl ? 'transparent' : 'secondary.main', // Color de fondo solo si NO hay imagen
+                                    width: 32, height: 32, fontSize: '0.8rem'
+                                }}
                             >
                                 {!user.profilePictureUrl && userInitials}
                             </Avatar>

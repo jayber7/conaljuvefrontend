@@ -106,9 +106,7 @@ const HomePage = () => {
             </Box>
       
       {/* --- TITULO PRINCIPAL --- */}
-      <Typography variant="h3" component="h3" sx={{  ml: 2, whiteSpace: 'nowrap' }} >
-        Últimas Noticias
-      </Typography>
+      
       <Button
                     variant="contained" // O prueba "outlined"
                     color="secondary"    // O "secondary" si quieres destacarlo más
@@ -121,6 +119,9 @@ const HomePage = () => {
                 >
                     Registrarse como Miembro
                 </Button>
+      <Typography variant="h3" component="h3" sx={{  ml: 2, whiteSpace: 'nowrap' }} >
+        Últimas Noticias
+      </Typography>
       {/* --- Filtros y Ordenamiento (Dentro de un Paper) --- */}
       <Paper elevation={1} sx={{ p: 2, mb: 4, bgcolor: 'background.paper' }}> {/* Fondo blanco, sombra ligera */}
           <Grid container spacing={2} alignItems="center">

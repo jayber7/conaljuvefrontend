@@ -15,11 +15,11 @@ import UploadFileIcon from '@mui/icons-material/UploadFile'; // Para botón de s
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import DeleteIcon from '@mui/icons-material/Delete'; // Para quitar foto
 
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3'; // Adapter para DatePicker
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+// import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3'; // Adapter para DatePicker
+// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 //import es from 'date-fns/locale/es'; // Locale español para DatePicker
-import { es } from 'date-fns/locale';
+// import { es } from 'date-fns/locale';
 import CameraAltIcon from '@mui/icons-material/CameraAlt'; // Icono para activar cámara
 import CloseIcon from '@mui/icons-material/Close'; // Icono para cerrar cámara
 import SwitchCameraIcon from '@mui/icons-material/SwitchCamera'; // Icono para cambiar cámara (avanzado)
@@ -592,7 +592,7 @@ const styles = {
 };
 // --- FIN DEFINICIÓN DE ESTILOS ---
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
+    
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth scroll="paper"> {/* Aumentado a lg */}
         <DialogTitle sx={{ borderBottom: 1, borderColor: 'divider', pb: 1 }}>{user?.isProfileComplete ? 'Actualizar Perfil' : 'Completa tu Perfil'}</DialogTitle>
         <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
@@ -730,7 +730,7 @@ const styles = {
             </DialogActions>
         </form>
     </Dialog>
-</LocalizationProvider>
+
 );
 };
 
