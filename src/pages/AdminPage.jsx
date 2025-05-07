@@ -222,7 +222,7 @@ const AdminPage = () => {
         {(isAdmin || isStaff) && (
                   <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       startIcon={<AddCircleOutlineIcon />}
                       onClick={() => handleOpenModal(null)}
                   >

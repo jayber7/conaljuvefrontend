@@ -163,7 +163,7 @@ const handleSaveSuccess = () => {
                  {/* Botón Añadir visible para Staff/Admin */}
                 {(isAdmin || isStaff) && (
                      <Button
-                        variant="contained" color="primary"
+                        variant="contained" color="secondary"
                         startIcon={<AddCircleOutlineIcon />}
                         onClick={() => handleOpenModal(null)} // null para crear
                      >

@@ -1,9 +1,15 @@
-import React, { useState, useEffect, useCallback, RouterLink  } from 'react';
+import React, { useState, useEffect, useCallback  } from 'react';
 import { Box, Container, Button, Grid, Typography, CircularProgress, Alert, Pagination, Stack, Select, MenuItem, FormControl, InputLabel, Paper } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import NewsCard from '../components/News/NewsCard'; // Crear este componente
+import StatCard from '../components/Home/StatCard'; // <-- IMPORTAR STATCARD
 import api from '../services/api';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
+import PeopleIcon from '@mui/icons-material/People';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser'; // Icono para miembros verificados
+import ArticleIcon from '@mui/icons-material/Article';
+import AssignmentIcon from '@mui/icons-material/Assignment'; // O BusinessCenterIcon para proyectos
 //import bannerConaljuve from '../assets/BannerCONALJUVE.png';
 const HomePage = () => {
   const [news, setNews] = useState([]);
@@ -16,8 +22,33 @@ const HomePage = () => {
   //const [filterDept, setFilterDept] = useState(''); // Filtro por departamento
   const [filterDeptCode, setFilterDeptCode] = useState(''); // <-- MODIFICADO: Usar código
   const [departments, setDepartments] = useState([]); // Lista de deptos para el filtro
+  const [stats, setStats] = useState({
+    totalMemberCount: null,
+    verifiedMemberCount: null,
+    newsCount: null,
+    projectCount: null
+  });  
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [errorStats, setErrorStats] = useState('');
 
-
+    // --- Fetch Estadísticas ---
+    useEffect(() => {
+      const fetchStats = async () => {
+          setLoadingStats(true); setErrorStats('');
+          try {
+              // Usar el endpoint de resumen
+              const response = await api.get('/stats/summary');
+              setStats(response.data.data || {  totalMemberCount: 0, verifiedMemberCount: 0, newsCount: 0, projectCount: 0 });
+          } catch (err) {
+              console.error("Error fetching stats:", err);
+              setErrorStats("No se pudieron cargar las estadísticas.");
+              setStats({ totalMemberCount: 'N/A', verifiedMemberCount: 'N/A', newsCount: 'N/A', projectCount: 'N/A' });
+          } finally {
+              setLoadingStats(false);
+          }
+      };
+      fetchStats();
+    }, []); // Cargar solo una vez al montar
     // Función para cargar noticias
    const fetchNews = useCallback(async () => {
         setLoading(true);
@@ -106,22 +137,74 @@ const HomePage = () => {
             </Box>
       
       {/* --- TITULO PRINCIPAL --- */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+        <Button
+            variant="contained" // O prueba "outlined"
+            color="secondary"    // O "secondary" si quieres destacarlo más
+            component={RouterLink}
+            to= '/registro-miembro' // <-- Ruta a tu página de registro de miembro
+            size="medium" // Tamaño normal o "large" si prefieres
+            startIcon={<AddCircleOutlineIcon />} // Icono opcional
+            sx={{  ml: 2, whiteSpace: 'nowrap' }}
+            // Margen superior para separarlo del título
+        >
+            Registrarse como Miembro
+        </Button>
+      </Box>
+      <Box sx={{ mb: 4 }}>
+      {loadingStats && <CircularProgress size={20} sx={{display: 'block', mx: 'auto'}} />}
+      {errorStats && <Alert severity="warning" sx={{mb: 2}}>{errorStats}</Alert>}
+          {!loadingStats && !errorStats && (
+              <Grid container spacing={1} justifyContent="center">
+                  {/* Tarjeta Miembros Registrados (Totales) */}
+                  <Grid item xs={12} sm={6} md={3}> {/* Ajustar md para 4 tarjetas */}
+                      <StatCard
+                          icon={<PeopleIcon />}
+                          title="Miembros Registrados"
+                          value={stats.totalMemberCount}
+                          color="primary.main" // Azul, por ejemplo
+                          iconBgColor="primary.light"
+                      />
+                  </Grid>
+                  {/* Tarjeta Miembros Verificados */}
+                  <Grid item xs={12} sm={6} md={3}>
+                      <StatCard
+                          icon={<VerifiedUserIcon />}
+                          title="Miembros Verificados"
+                          value={stats.verifiedMemberCount}
+                          color="success.main" // Verde
+                          iconBgColor="success.light"
+                      />
+                  </Grid>
+                  {/* Tarjeta Noticias */}
+                  <Grid item xs={12} sm={6} md={3}>
+                      <StatCard
+                          icon={<ArticleIcon />}
+                          title="Noticias Publicadas"
+                          value={stats.newsCount}
+                          color="info.main" // Azul claro
+                          iconBgColor="info.light"
+                      />
+                  </Grid>
+                  {/* Tarjeta Proyectos */}
+                  <Grid item xs={12} sm={6} md={3}>
+                      <StatCard
+                          icon={<AssignmentIcon />}
+                          title="Proyectos Activos"
+                          value={stats.projectCount}
+                          color="secondary.main" // Ámbar/Amarillo
+                          iconBgColor="secondary.light"
+                      />
+                  </Grid>
+              </Grid>
+          )}
+      </Box>
+      {/* --- FIN ESTADÍSTICAS --- */}
       
-      <Button
-                    variant="contained" // O prueba "outlined"
-                    color="secondary"    // O "secondary" si quieres destacarlo más
-                    component={RouterLink}
-                    to="/registro-miembro" // <-- Ruta a tu página de registro de miembro
-                    size="medium" // Tamaño normal o "large" si prefieres
-                    startIcon={<AddCircleOutlineIcon />} // Icono opcional
-                    sx={{  ml: 2, whiteSpace: 'nowrap' }}
-                    // Margen superior para separarlo del título
-                >
-                    Registrarse como Miembro
-                </Button>
       <Typography variant="h3" component="h3" sx={{  ml: 2, whiteSpace: 'nowrap' }} >
         Últimas Noticias
       </Typography>
+      
       {/* --- Filtros y Ordenamiento (Dentro de un Paper) --- */}
       <Paper elevation={1} sx={{ p: 2, mb: 4, bgcolor: 'background.paper' }}> {/* Fondo blanco, sombra ligera */}
           <Grid container spacing={2} alignItems="center">

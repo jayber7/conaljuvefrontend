@@ -428,12 +428,11 @@ const MemberRegistrationPage = () => {
                                        <Grid item xs={12} sm={6} style={{ width: '10%' }}><FormControl fullWidth size="small" error={!!errors.sex} disabled={loading}><InputLabel shrink={true}>Sexo</InputLabel><Controller name="sex" control={control} render={({ field }) => (<Select label="Sexo" {...field}><MenuItem value=""><em>(Opcional)</em></MenuItem><MenuItem value="male">Masculino</MenuItem><MenuItem value="female">Femenino</MenuItem></Select>)} /></FormControl> </Grid>
                                        <Grid item xs={12}><TextField fullWidth size="small" label="Número Celular**" {...register("phoneNumber")} error={!!errors.phoneNumber} helperText={errors.phoneNumber?.message} disabled={loading} slotProps={{ inputLabel: { shrink: true }}}/> </Grid>
                                    </Grid>
-                             </Paper>
-                         </Grid>
-                               {/* --- SECCIÓN FOTO REVISADA --- */}
+                                    {/* --- SECCIÓN FOTO REVISADA --- */}
                               <Box sx={{ mb: 2.5 }}> {/* Contenedor para Foto */}
-                                 <Typography variant="body2" color="textSecondary" gutterBottom>Foto del Miembro (Opcional)</Typography>
+                                 <Typography variant="body2" color="textSecondary" gutterBottom>Foto del Miembro</Typography>
                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+
                                       <Tooltip title="Añadir/Cambiar foto">
                                           {/* IconButton envuelve Avatar para el menú */}
                                           <IconButton onClick={handlePhotoMenuOpen} sx={{ p: 0 }} disabled={loading}>
@@ -497,8 +496,9 @@ const MemberRegistrationPage = () => {
                                   </Box>
                               </Box>
                              {/* --- FIN SECCIÓN FOTO --- */}
-                             <Divider sx={{ my: 2 }}/>
-                          
+                             </Paper>
+                             
+                         </Grid>
                           {/* --- Datos Junta Vecinal y Ubicación --- */}
                          <Grid item xs={12}>
                               <Paper sx={{ p: 2.5 }} variant="outlined">
@@ -548,11 +548,11 @@ const MemberRegistrationPage = () => {
 
                          {/* Botón Submit */}
                          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                              <Button type="submit" variant="contained" color="primary" disabled={loading}>
+                              <Button type="submit" variant="contained" color="secondary" disabled={loading}>
                                   {loading ? <CircularProgress size={24} color="inherit"/> : 'Enviar Registro'}
                               </Button>
                          </Grid>
-
+                        
                      </Grid>
                  )}
              </form>
