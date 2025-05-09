@@ -22,7 +22,7 @@ const banners = [
         altText: 'Banner sobre nueva directiva',
         title: '',
         description: '',
-        linkUrl: '/comites/registro-miembro', // Enlace a una noticia específica (ejemplo)
+        linkUrl: '/registro-miembro', // Enlace a una noticia específica (ejemplo)
         linkLabel: 'Participa'
     },
 

@@ -4,6 +4,7 @@ export const institutionContent = {
     'organigrama': {
         title: 'EL COMITÉ EJECUTIVO NACIONAL (C.E.N.)',
         type: 'image',
+        description: 'PRESIDENTE:	MARIO MITA DAZA',
         imageUrl: '/assets/institution/organigrama-conaljuve.png' // Asegúrate que esta imagen exista
     },
     'estatuto': {
@@ -22,14 +23,16 @@ export const institutionContent = {
         title: 'Directorio CEN CONALJUVE (Gestión Actual)',
         type: 'directory',
         members: [
-            { name: '(Nombre Presidente)', role: 'Presidente/a' },
-            { name: '(Nombre Vicepresidente)', role: 'Vicepresidente/a' },
-            { name: '(Nombre Strio. General)', role: 'Strio. General' },
-            { name: '(Nombre Strio. Relaciones)', role: 'Stria. De Relaciones' },
-             { name: '(Nombre Strio. Organización)', role: 'Strio. De Organización' },
+            { name: 'MARIO MITA DAZA', role: 'Presidente/a' },
+            { name: 'JUSTINO APAZA CALLISAYA', role: 'Vicepresidente/a' },
+            { name: 'NICASIO RIOS', role: 'Vicepresidente/a' },
+            { name: 'JOSE ANTONIO FLORES', role: 'Strio. General' },
+            { name: 'ALBERTO PEREZ TUMIRI', role: 'Stria. De Relaciones' },
+            { name: 'MARIELA CONDE HERRERA', role: 'Strio. De Hacienda' },
+            { name: 'JOSE LUIS GARCIA PADILLA', role: 'Strio. De Actas' },
             // ... Completar con nombres reales ...
-            { name: '(Nombre Vocal 1)', role: 'Vocal' },
-            { name: '(Nombre Vocal 2)', role: 'Vocal' },
+            { name: 'NATIVIDAD VARGAS ORELLANA', role: 'Vocal' },
+            { name: 'SARA BAZOALTO CRUZ', role: 'Vocal' },
         ]
     },
     'vision-mision': {

@@ -28,7 +28,7 @@ const sidebarNavItems = [
         { name: '¿Qué es CONALJUVE?', path: '/sobre-conaljuve' }, // Mover aquí
         { name: 'COMITÉ EJECUTIVO NACIONAL (C.E.N.)', path: '/institucion/organigrama' },
         { name: 'Estatuto Orgánico', path: '/institucion/estatuto' },
-        // { name: 'Estructura CONALJUVE', path: '/institucion/estructura' }, // Combinado o separado?
+        { name: 'Directorio Nacional', path: '/institucion/directorio-nacional' }, // Combinado o separado?
         { name: 'Visión y Misión', path: '/institucion/vision-mision' },
         { name: 'Objeto y Fines', path: '/institucion/objeto-fines' },
         { name: 'Tribunal de honor y disiplinario', path: '/institucion/tribunal' },
