@@ -65,7 +65,7 @@ const LoginModal = ({ open, onClose, onSwitchToRegister }) => {
         </DialogContent>
         <DialogActions sx={{ p: '16px 24px'}}>
           <Button onClick={onClose} disabled={loading} color="inherit">Cancelar</Button>
-          <Button type="submit" variant="contained" color="primary" disabled={loading}>
+          <Button type="submit" variant="contained" color="secondary" disabled={loading}>
             {loading ? <CircularProgress size={24} color="inherit"/> : 'Ingresar'}
           </Button>
         </DialogActions>

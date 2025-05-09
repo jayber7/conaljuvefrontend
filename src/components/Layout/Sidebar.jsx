@@ -11,6 +11,8 @@ import LocationCityIcon from '@mui/icons-material/LocationCity'; // Para Municip
 import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact'; // Para Coordinadoras
 import GroupsIcon from '@mui/icons-material/Groups';
 import AssignmentIcon from '@mui/icons-material/Assignment'; // Icono para Proyectos
+import GavelIcon from '@mui/icons-material/Gavel'; // Icono para Tribunal
+import SouthAmericaIcon from '@mui/icons-material/SouthAmerica';
 
 import { colors } from '@mui/material';
 
@@ -34,7 +36,7 @@ const sidebarNavItems = [
     },
     { id: 'registro', name: 'Registro', path: '/registro-miembro', icon: <HowToRegIcon />, bgColor: colors.teal[500], textColor: '#fff' }, // Enlace directo (o abre modal?)
     {
-      id: 'federaciones_dptales', name: 'Federaciones Departamentales', icon: <MapIcon />, bgColor: colors.green[600], textColor: '#fff', // Nombre corto
+      id: 'federaciones_dptales', name: 'Federaciones Departamentales', icon: <SouthAmericaIcon />, bgColor: colors.green[600], textColor: '#fff', // Nombre corto
       subItems: [
         { name: 'Chuquisaca', path: '/federaciones/dptales/ch' },
         { name: 'La Paz', path: '/federaciones/dptales/lp' },
@@ -90,6 +92,7 @@ const sidebarNavItems = [
       ]
     },
     { id: 'proyectos', name: 'Proyectos', path: '/proyectos', icon: <AssignmentIcon />, bgColor: colors.lime[600], textColor: '#fff' },
+    { id: 'tribunales', name: 'Tribunales', path: '/tribunales', icon: <GavelIcon />, bgColor: colors.brown[500], textColor: '#fff' }, // Nuevo item
   ];
 // --- FIN DEFINIR ITEMS ---
 

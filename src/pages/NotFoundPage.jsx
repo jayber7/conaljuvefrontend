@@ -10,13 +10,13 @@ const NotFoundPage = () => {
       <Paper elevation={3} sx={{ p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', borderRadius: '12px' }}>
         <ReportProblemIcon sx={{ fontSize: 80, color: 'secondary.main', mb: 2 }} />
         <Typography component="h1" variant="h3" align="center" color="text.primary" gutterBottom>
-          Error 404
+          Pagina en Construcción
         </Typography>
         <Typography variant="h5" align="center" color="text.secondary" paragraph>
-          ¡Ups! Página No Encontrada
+          ¡Ups! Página en diseño
         </Typography>
         <Typography variant="body1" align="center" color="text.secondary" paragraph>
-          Lo sentimos, la página que estás buscando no existe o ha sido movida.
+          Lo sentimos, la página que estás buscando aún no existe.
         </Typography>
         <Button
           component={RouterLink}

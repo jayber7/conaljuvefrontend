@@ -66,7 +66,7 @@ const MainLayout = () => {
                                      >
                                         
                                         {/* <Box component="span" sx={{mr: 1, fontSize: '1.8rem'}}>🇧🇴</Box> Emoji temporal */}
-                                        CONFEDERACIÓN NACIONAL DE JUNTAS VECINALES DE BOLIVIA
+                                        PLATAFORMA DIGITAL DE LAS JUNTAS VECINALES DE BOLIVIA
                                      </Typography>
                             {/* Opcional: Texto CONALJUVE al lado */}
                             {/* <Typography variant="h6" noWrap sx={{ fontWeight: 700, color: 'primary.main' }}>CONALJUVE</Typography> */}

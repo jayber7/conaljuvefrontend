@@ -12,6 +12,8 @@ import api from '../services/api';
 import NewsFormModal from '../components/Admin/NewsFormModal'; // Crear este componente
 import UserManagement from '../components/Admin/UserManagement'; // <-- Importar componente
 import MemberManagement from '../components/Admin/MemberManagement'; // <-- NUEVO: Gestión de Miembros
+import TribunalManagement from '../components/Admin/TribunalManagement'; // <-- Importar
+
 
 import { useAuth } from '../contexts/AuthContext'; // Importar useAuth
 
@@ -210,7 +212,9 @@ const AdminPage = () => {
                     <Tab label="Gestionar Noticias" {...a11yProps(0)} />
                      {/* Mostrar tabs de Miembros y Usuarios solo a Admin */}
                     {isAdmin && <Tab label="Gestionar Miembros" {...a11yProps(1)} />}
-                    {isAdmin && <Tab label="Gestionar Usuarios/Roles" {...a11yProps(2)} />}
+                    
+                    {isAdmin && <Tab label="Gestionar Tribunales" {...a11yProps(2)} />} {/* <-- Nueva Tab */}
+                    {isAdmin && <Tab label="Gestionar Usuarios/Roles" {...a11yProps(3)} />}
                 </Tabs>
       </Box>
        {/* --- Contenido Tab Noticias --- */}
@@ -293,10 +297,12 @@ const AdminPage = () => {
              )}
             {/* --- Fin Tab Miembros --- */}
 
+            {isAdmin && (<TabPanel value={currentTab} index={2}> <TribunalManagement /> </TabPanel> )} {/* <-- Nuevo Panel */}
+
 
             {/* --- Contenido Tab Usuarios/Roles (Solo Admin) --- */}
             {isAdmin && (
-                <TabPanel value={currentTab} index={2}>
+                <TabPanel value={currentTab} index={3}>
                     <UserManagement /> {/* Renderizar componente */}
                 </TabPanel>
              )}

@@ -11,38 +11,21 @@ const banners = [
         id: 1,
         imageUrl: '/assets/banners/banner1.jpg', // Ruta relativa a la carpeta public
         altText: 'Banner sobre nueva directiva',
-        title: 'CONALJUVE Renueva su Directiva Nacional',
-        description: 'Conoce a los nuevos líderes y los desafíos para la gestión.',
+        title: '',
+        description: '',
         linkUrl: '/comites/juventud', // Enlace a una noticia específica (ejemplo)
         linkLabel: 'Leer Más'
     },
     {
         id: 2,
-        imageUrl: '/assets/banners/banner2.jpg',
-        altText: 'Banner sobre seguridad ciudadana',
-        title: 'Juntas Vecinales Exigen Mayor Seguridad',
-        description: 'Reuniones clave con autoridades locales en Cochabamba.',
-        linkUrl: '/comites/aliados',
-        linkLabel: 'Ver Detalles'
+        imageUrl: '/assets/banners/banner2.jpg', // Ruta relativa a la carpeta public
+        altText: 'Banner sobre nueva directiva',
+        title: '',
+        description: '',
+        linkUrl: '/comites/registro-miembro', // Enlace a una noticia específica (ejemplo)
+        linkLabel: 'Participa'
     },
-     {
-        id: 3,
-        imageUrl: '/assets/banners/banner3.jpg',
-        altText: 'Banner sobre proyectos vecinales',
-        title: 'Capacitación en Gestión de Proyectos',
-        description: 'Fortaleciendo las capacidades de nuestros dirigentes.',
-        linkUrl: '/comites/profesionales', // Enlace a una página de comité
-        linkLabel: 'Más Información'
-    },
-    {
-        id: 4,
-        imageUrl: '/assets/banners/banner4.jpg',
-        altText: 'Banner sobre proyectos vecinales',
-        title: 'Capacitación en Gestión de Proyectos',
-        description: 'Fortaleciendo las capacidades de nuestros dirigentes.',
-        linkUrl: '/comites/salud', // Enlace a una página de comité
-        linkLabel: 'Más Información'
-    },
+
     // Añade hasta 8 banners
 ];
 // --- FIN DATOS EJEMPLO ---

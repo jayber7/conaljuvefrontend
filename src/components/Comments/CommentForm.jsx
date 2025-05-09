@@ -41,7 +41,7 @@ const CommentForm = ({ articleId, onCommentAdded }) => {
       <Button
         type="submit"
         variant="contained"
-        color="primary"
+        color="secondary"
         disabled={loading}
       >
         {loading ? <CircularProgress size={24} color="inherit"/> : 'Enviar Comentario'}

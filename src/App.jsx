@@ -17,6 +17,10 @@ import InstitutionPage from './pages/institution/InstitutionPage';
 import FederationListPage from './pages/federations/FederationListPage';
 import FederationDetailPage from './pages/federations/FederationDetailPage';
 import ProjectPage from './pages/ProjectPage';
+import ContactPage from './pages/ContactPage';
+import HowToBeMemberPage from './pages/HowToBeMemberPage';
+import TribunalListPage from './pages/tribunals/TribunalListPage'; // <-- Importar página de lista
+
 function App() {
   return (
     <Routes>
@@ -25,14 +29,6 @@ function App() {
         <Route path="/sobre-conaljuve" element={<AboutPage />} /> {/* Ruta específica */}
         <Route path="/noticia/:id" element={<NewsDetailPage />} />
         <Route path="/sobre-conaljuve" element={<AboutPage />} />
-        {/* --- RUTAS PARA COMITÉS --- */}
-        {/* Opción A: Usar un componente genérico pasando el tipo */}
-        {/* <Route path="/comites/juventud" element={<CommitteePage committeeId="juventud" />} />
-        <Route path="/comites/profesionales" element={<CommitteePage committeeId="profesionales" />} />
-        <Route path="/comites/mujeres" element={<CommitteePage committeeId="mujeres" />} />
-        <Route path="/comites/salud" element={<CommitteePage committeeId="salud" />} />
-        <Route path="/comites/aliados" element={<CommitteePage committeeId="aliados" />} /> */}
-        {/* Ruta protegida para Admin */}
         <Route
           path="/admin"
           element={
@@ -79,6 +75,10 @@ function App() {
         <Route path="/proyectos" element={<ProtectedRoute roles={['USER','STAFF', 'ADMIN']}><ProjectPage /></ProtectedRoute>} />
         <Route path="/politica-privacidad" element={<PrivacyPolicyPage />} />
         <Route path="/terminos-servicio" element={<TermsOfServicePage />} />
+        <Route path="/contacto" element={<ContactPage />} />
+        <Route path="/como-ser-miembro" element={<HowToBeMemberPage />} />
+        <Route path="/tribunales" element={<TribunalListPage />} />
+
         {/* Cualquier otra ruta */}
         <Route path="*" element={<NotFoundPage />} />
       </Route>

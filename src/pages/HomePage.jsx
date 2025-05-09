@@ -217,7 +217,7 @@ const HomePage = () => {
                       </Select>
                   </FormControl>
               </Grid>
-              <Grid item xs={12} sm={6} md="auto">
+              <Grid item xs={12} sm={6} md="auto" style={{ width: '15%' }}>
                    <FormControl size="small" fullWidth>
                       <InputLabel id="filter-dept-label">Departamento</InputLabel>
                       <Select labelId="filter-dept-label" value={filterDeptCode} label="Departamento" onChange={handleFilterChange} >

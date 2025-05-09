@@ -724,9 +724,9 @@ const styles = {
                  {/* Mostrar Cancelar solo si no hubo éxito */}
                  {!success && <Button onClick={onClose} disabled={loading} color="inherit">Cancelar</Button>}
                  {/* Mostrar Crear Cuenta solo si no hubo éxito */}
-                 {!success && <Button type="submit" variant="contained" color="primary" disabled={loading}> {loading ? <CircularProgress size={24} color="inherit"/> : 'Guardar Perfil'} </Button>}
+                 {!success && <Button type="submit" variant="contained" color="secondary" disabled={loading}> {loading ? <CircularProgress size={24} color="inherit"/> : 'Guardar Perfil'} </Button>}
                  {/* Mostrar botón Cerrar si hubo éxito */}
-                 {success && <Button onClick={onClose} color="primary">Cerrar</Button>}
+                 {success && <Button onClick={onClose} color="secondary">Cerrar</Button>}
             </DialogActions>
         </form>
     </Dialog>

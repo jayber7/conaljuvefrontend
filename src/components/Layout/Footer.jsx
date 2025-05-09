@@ -85,9 +85,9 @@ const Footer = () => {
                             Descubre
                         </Typography>
                         <Link component={RouterLink} to="/sobre-conaljuve" color="inherit" display="block" sx={footerLinkStyle}>¿Qué es CONALJUVE?</Link>
-                        <Link component={RouterLink} to="/noticias" color="inherit" display="block" sx={footerLinkStyle}>Últimas Noticias</Link>
-                        <Link href="#" color="inherit" display="block" sx={footerLinkStyle}>Federaciones</Link> {/* Enlace futuro */}
-                        <Link href="#" color="inherit" display="block" sx={footerLinkStyle}>Contacto</Link> {/* Enlace futuro */}
+                        <Link component={RouterLink} to="/" color="inherit" display="block" sx={footerLinkStyle}>Últimas Noticias</Link>
+                        {/* <Link href="#" color="inherit" display="block" sx={footerLinkStyle}>Federaciones</Link> {/* Enlace futuro */}
+                        
                     </Grid>
 
                     {/* --- Columna 2: Soporte / Participa --- */}
@@ -96,9 +96,9 @@ const Footer = () => {
                             Participa 
                         </Typography>
                         <Link component={RouterLink} to="/registro-miembro" color="inherit" display="block" sx={footerLinkStyle}>Registrarse</Link>
-                        <Link component={RouterLink} to="/login" color="inherit" display="block" sx={footerLinkStyle}>Iniciar Sesión</Link>
-                        <Link href="#" color="inherit" display="block" sx={footerLinkStyle}>¿Cómo ser miembro?</Link> {/* Enlace futuro */}
-                        <Link href="#" color="inherit" display="block" sx={footerLinkStyle}>Voluntariado</Link> {/* Enlace futuro */}
+                        {/* <Link component={RouterLink} to="/login" color="inherit" display="block" sx={footerLinkStyle}>Iniciar Sesión</Link> */}
+                        <Link component={RouterLink} to="/como-ser-miembro" color="inherit" display="block" sx={footerLinkStyle}>¿Cómo ser miembro?</Link> {/* Enlace futuro */}
+                        {/* <Link href="#" color="inherit" display="block" sx={footerLinkStyle}>Voluntariado</Link>  */}
                     </Grid>
 
                     {/* --- Columna 3: Conecta / Redes Sociales --- */}
@@ -125,6 +125,7 @@ const Footer = () => {
                         </Stack>
                         <Link href="#" color="inherit" display="block" sx={footerLinkStyle}>Oficinas Centrales</Link> {/* Enlace futuro */}
                         <Link href="#" color="inherit" display="block" sx={footerLinkStyle}>Directorio</Link> {/* Enlace futuro */}
+                        <Link component={RouterLink} to="/contacto" color="inherit" display="block" sx={footerLinkStyle}>Contacto</Link>  
                     </Grid>
 
                      

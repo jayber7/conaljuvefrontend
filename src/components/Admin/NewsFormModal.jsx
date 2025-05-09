@@ -346,7 +346,7 @@ return (
                 </DialogContent>
                 <DialogActions sx={{ p: '16px 24px', borderTop: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
                     <Button onClick={onClose} disabled={loading} color="inherit">Cancelar</Button>
-                    <Button type="submit" variant="contained" color="primary" disabled={loading}>
+                    <Button type="submit" variant="contained" color="secondary" disabled={loading}>
                         {loading ? <CircularProgress size={24} color="inherit"/> : (isEditing ? 'Guardar Cambios' : 'Crear Noticia')}
                     </Button>
                 </DialogActions>

@@ -110,7 +110,8 @@ const NewsDetailPage = () => {
               component="img"
               sx={{
                   width: '100%',
-                  maxHeight: '450px',
+                  height: '100%',
+                  //maxHeight: '450px',
                   objectFit: 'cover',
                   borderRadius: '8px',
                   mb: 3,
@@ -127,7 +128,9 @@ const NewsDetailPage = () => {
                             El contenido principal de esta noticia está en formato PDF.
                         </Typography>
                         <iframe
-                            src={`${article.pdfUrl}#view=fitH`} // Añadir #view=fitH para ajustar horizontalmente (opcional)
+                            // src={`${article.pdfUrl}#view=fitH`} // Añadir #view=fitH para ajustar horizontalmente (opcional)
+                            src={`${article.pdfUrl}?fl_inline=true#view=fitH`}
+
                             width="100%"
                             height="700px" // Ajusta la altura según necesidad
                             style={{ border: '1px solid #ccc' }} // Estilo básico del borde
@@ -163,10 +166,7 @@ const NewsDetailPage = () => {
           {/* --- Contenido --- */}
           {/* Usar dangerouslySetInnerHTML con precaución si viene de un editor WYSIWYG */}
           {/* Si es texto plano, puedes usar Typography o Box */}
-          <Box className="news-content" sx={{ '& p': { mb: 2 }, lineHeight: 1.7 }}>
-             <Typography component="div" dangerouslySetInnerHTML={{ __html: article.content }} />
-             {/* O si es texto plano: <Typography>{article.content}</Typography> */}
-          </Box>
+          
        </Paper>
 
       {/* --- Sección Comentarios --- */}
