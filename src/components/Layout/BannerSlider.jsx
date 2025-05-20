@@ -25,7 +25,51 @@ const banners = [
         linkUrl: '/registro-miembro', // Enlace a una noticia específica (ejemplo)
         linkLabel: 'Participa'
     },
-
+    {
+        id: 3,
+        imageUrl: '/assets/banners/banner3.jpg', // Ruta relativa a la carpeta public
+        altText: 'Banner sobre nueva directiva',
+        title: '',
+        description: '',
+        linkUrl: '/comites/juventud', // Enlace a una noticia específica (ejemplo)
+        linkLabel: 'Leer Más'
+    },
+    {
+        id: 4,
+        imageUrl: '/assets/banners/banner4.jpg', // Ruta relativa a la carpeta public
+        altText: 'Banner sobre nueva directiva',
+        title: '',
+        description: '',
+        linkUrl: '/registro-miembro', // Enlace a una noticia específica (ejemplo)
+        linkLabel: 'Participa'
+    },
+    {
+        id: 5,
+        imageUrl: '/assets/banners/banner5.jpg', // Ruta relativa a la carpeta public
+        altText: 'Banner sobre nueva directiva',
+        title: '',
+        description: '',
+        linkUrl: '/comites/juventud', // Enlace a una noticia específica (ejemplo)
+        linkLabel: 'Leer Más'
+    },
+    {
+        id: 6,
+        imageUrl: '/assets/banners/banner6.jpg', // Ruta relativa a la carpeta public
+        altText: 'Banner sobre nueva directiva',
+        title: '',
+        description: '',
+        linkUrl: '/registro-miembro', // Enlace a una noticia específica (ejemplo)
+        linkLabel: 'Participa'
+    },
+    {
+        id: 7,
+        imageUrl: '/assets/banners/banner7.jpg', // Ruta relativa a la carpeta public
+        altText: 'Banner sobre nueva directiva',
+        title: '',
+        description: '',
+        linkUrl: '/registro-miembro', // Enlace a una noticia específica (ejemplo)
+        linkLabel: 'Participa'
+    },
     // Añade hasta 8 banners
 ];
 // --- FIN DATOS EJEMPLO ---
