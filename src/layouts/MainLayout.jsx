@@ -29,47 +29,39 @@ const MainLayout = () => {
             <AppBar
                 position="fixed"
                 sx={{
-                    zIndex: (theme) => theme.zIndex.drawer + 1, // Encima del Sidebar
-                    bgcolor: 'background.paper', // Fondo blanco o el que prefieras
-                    color: 'text.primary',
-                    boxShadow: 1, // Sombra ligera
-                    height: `${logoAppBarHeight}px` // Altura fija
+                    zIndex: (theme) => theme.zIndex.drawer + 1,
+                    background: 'linear-gradient(135deg, #003366 0%, #004d99 100%)',
+                    color: '#ffffff',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.2)',
+                    height: `${logoAppBarHeight}px`
                 }}
                 elevation={0}
             >
-                <Toolbar sx={{ justifyContent: 'space-between', minHeight: `${logoAppBarHeight}px !important`, backgroundImage: `url('/assets/patterns/pattern.png')` }}>
+                <Toolbar sx={{ justifyContent: 'space-between', minHeight: `${logoAppBarHeight}px !important` }}>
                     {/* Logo a la Izquierda */}
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <RouterLink to="/" style={{ display: 'flex', alignItems: 'center', textDecoration:'none' }}>
                            <Box
                                 component="img"
-                                sx={{ height: logoAppBarHeight * 0.7, // 70% de la altura del AppBar
+                                sx={{ height: logoAppBarHeight * 0.75,
                                      width: 'auto',
-                                     mr: 1.5 }}
+                                     mr: 2 }}
                                 alt="Logo CONALJUVE"
                                 src={logoConaljuve}
                            />
                            <Typography
-                                       variant="h4"
+                                       variant="h5"
                                        noWrap
-                                      
-                                       
                                        sx={{
-                                         ml: 16,
-                                         display: { xs: 'none', md: 'flex' }, // Oculto en móvil, visible en desktop
+                                         display: { xs: 'none', md: 'block' },
                                          fontWeight: 700,
-                                         // letterSpacing: '.1rem',
-                                         color: '#ffffff', // Usar color primario del tema
-                                         textDecoration: 'none',
-                                         alignItems: 'center'
+                                         color: '#ffffff',
+                                         letterSpacing: '0.02em',
+                                         textShadow: '0 1px 2px rgba(0,0,0,0.2)',
                                        }}
                                      >
-                                        
-                                        {/* <Box component="span" sx={{mr: 1, fontSize: '1.8rem'}}>🇧🇴</Box> Emoji temporal */}
-                                        PLATAFORMA DIGITAL DE LAS JUNTAS VECINALES DE BOLIVIA
-                                     </Typography>
-                            {/* Opcional: Texto CONALJUVE al lado */}
-                            {/* <Typography variant="h6" noWrap sx={{ fontWeight: 700, color: 'primary.main' }}>CONALJUVE</Typography> */}
+                                         PLATAFORMA DIGITAL DE LAS JUNTAS VECINALES DE BOLIVIA
+                           </Typography>
                         </RouterLink>
                     </Box>
 

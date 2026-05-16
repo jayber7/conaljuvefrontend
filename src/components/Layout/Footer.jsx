@@ -1,109 +1,64 @@
-// src/components/Layout/Footer.jsx
 import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Container, Typography, Link, Grid, TextField, Button, IconButton, Stack, Divider } from '@mui/material';
-// --- Importar iconos de redes sociales ---
+import { Box, Container, Typography, Link, Grid, IconButton, Stack, Divider } from '@mui/material';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import { FaTiktok } from 'react-icons/fa'; // Icono de TikTok desde react-icons
+import TikTokIcon from '@mui/icons-material/MusicNote';
 
-// --- IMPORTAR BANDERA (para fondo si la usas) ---
-// import banderaBolivia from '../../assets/banderaCONALJUVE.png';
-// --- ESTILOS REUTILIZABLES (Buena práctica) ---
-const footerTitleStyle = {
-    color: 'white',
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    fontSize: '0.9rem', // Un poco más pequeño para footer
-    mb: 1.5 // Margen inferior consistente
-};
-
-const footerLinkStyle = {
-    color: 'inherit', // Hereda el gris claro del Box padre
-    textDecoration: 'none',
-    display: 'block',
-    mb: 0.8, // Espacio entre links
-    fontSize: '0.875rem', // body2
-    '&:hover': {
-        color: 'secondary.main', // Color de acento al pasar el mouse
-        textDecoration: 'underline',
-    }
-};
-
-const socialLinks = [ // Mejor como array de objetos
-    { href: 'https://facebook.com/...', label: 'Facebook CONALJUVE', icon: <FacebookIcon /> },
-    { href: 'https://wa.me/...', label: 'WhatsApp CONALJUVE', icon: <WhatsAppIcon /> },
-    { href: 'https://instagram.com/...', label: 'Instagram CONALJUVE', icon: <InstagramIcon /> },
-    // { href: 'https://tiktok.com/...', label: 'TikTok CONALJUVE', icon: <TikTokIcon /> },
+const socialLinks = [
+    { href: 'https://facebook.com/conaljuve', label: 'Facebook CONALJUVE', icon: <FacebookIcon /> },
+    { href: 'https://wa.me/591', label: 'WhatsApp CONALJUVE', icon: <WhatsAppIcon /> },
+    { href: 'https://instagram.com/conaljuve', label: 'Instagram CONALJUVE', icon: <InstagramIcon /> },
+    { href: 'https://tiktok.com/@conaljuve', label: 'TikTok CONALJUVE', icon: <TikTokIcon /> },
 ];
-// --- FIN ESTILOS ---
-
-
-function Copyright() {
-    return (
-        <> {/* Usar Fragment para agrupar */}
-            {'Copyright © '}
-            <Link color="inherit" href="#">CONALJUVE Bolivia</Link>{' '}
-            {new Date().getFullYear()}
-            {'. Todos los derechos reservados.'}
-            <br />
-            <Link component={RouterLink} to="/politica-privacidad" color="inherit" sx={{ mx: 1, fontSize: '0.75rem' }}>
-                Política de Privacidad
-             </Link>
-             {' | '}
-             <Link component={RouterLink} to="/terminos-servicio" color="inherit" sx={{ mx: 1, fontSize: '0.75rem' }}>
-                 Términos de Servicio
-             </Link>
-        </>
-    );
-}
 
 const Footer = () => {
-    
     return (
         <Box
             component="footer"
             sx={{
-                py: { xs: 4, md: 6 }, // Más padding vertical en pantallas grandes
+                py: { xs: 5, md: 7 },
                 px: { xs: 2, md: 3 },
                 mt: 'auto',
-                backgroundColor: '#222', // O theme.palette.grey[900]
+                background: 'linear-gradient(180deg, #0F172A 0%, #1E293B 100%)',
                 color: 'rgba(255, 255, 255, 0.7)',
-                backgroundImage: `url('/assets/patterns/pattern.png')`,  // Si usas imagen
-                backgroundRepeat: 'repeat',
-                
             }}
         >
-            <Container maxWidth="lg"  >
-             {/* --- GRID RESPONSIVO --- */}
-             <Grid container spacing={{ xs: 3, sm: 4, md: 5 }} justifyContent="space-between">
-                    {/* --- Columna 1: Descubre / Quiénes Somos --- */}
-
-                    <Grid xs={12} sm={6} md={3}>
-                        <Typography variant="h6" gutterBottom sx={footerTitleStyle}>
+            <Container maxWidth="lg">
+                <Grid container spacing={{ xs: 4, md: 5 }}>
+                    <Grid item xs={12} sm={6} md={3}>
+                        <Typography variant="h6" sx={{ color: '#ffffff', fontWeight: 700, mb: 2, fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                             Descubre
                         </Typography>
-                        <Link component={RouterLink} to="/sobre-conaljuve" color="inherit" display="block" sx={footerLinkStyle}>¿Qué es CONALJUVE?</Link>
-                        <Link component={RouterLink} to="/" color="inherit" display="block" sx={footerLinkStyle}>Últimas Noticias</Link>
-                        {/* <Link href="#" color="inherit" display="block" sx={footerLinkStyle}>Federaciones</Link> {/* Enlace futuro */}
-                        
+                        <Link component={RouterLink} to="/sobre-conaljuve" color="inherit" display="block" sx={{ mb: 1, fontSize: '0.9rem', '&:hover': { color: '#F59E0B' }, transition: 'color 0.2s' }}>
+                            ¿Qué es CONALJUVE?
+                        </Link>
+                        <Link component={RouterLink} to="/" color="inherit" display="block" sx={{ mb: 1, fontSize: '0.9rem', '&:hover': { color: '#F59E0B' }, transition: 'color 0.2s' }}>
+                            Últimas Noticias
+                        </Link>
+                        <Link component={RouterLink} to="/institucion/organigrama" color="inherit" display="block" sx={{ mb: 1, fontSize: '0.9rem', '&:hover': { color: '#F59E0B' }, transition: 'color 0.2s' }}>
+                            Comité Ejecutivo
+                        </Link>
                     </Grid>
 
-                    {/* --- Columna 2: Soporte / Participa --- */}
-                    <Grid xs={12} sm={6} md={3}>
-                        <Typography variant="h6" gutterBottom sx={footerTitleStyle}>
-                            Participa 
+                    <Grid item xs={12} sm={6} md={3}>
+                        <Typography variant="h6" sx={{ color: '#ffffff', fontWeight: 700, mb: 2, fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            Participa
                         </Typography>
-                        <Link component={RouterLink} to="/registro-miembro" color="inherit" display="block" sx={footerLinkStyle}>Registrarse</Link>
-                        {/* <Link component={RouterLink} to="/login" color="inherit" display="block" sx={footerLinkStyle}>Iniciar Sesión</Link> */}
-                        <Link component={RouterLink} to="/como-ser-miembro" color="inherit" display="block" sx={footerLinkStyle}>¿Cómo ser miembro?</Link> {/* Enlace futuro */}
-                        {/* <Link href="#" color="inherit" display="block" sx={footerLinkStyle}>Voluntariado</Link>  */}
+                        <Link component={RouterLink} to="/registro-miembro" color="inherit" display="block" sx={{ mb: 1, fontSize: '0.9rem', '&:hover': { color: '#F59E0B' }, transition: 'color 0.2s' }}>
+                            Registrarse
+                        </Link>
+                        <Link component={RouterLink} to="/como-ser-miembro" color="inherit" display="block" sx={{ mb: 1, fontSize: '0.9rem', '&:hover': { color: '#F59E0B' }, transition: 'color 0.2s' }}>
+                            ¿Cómo ser miembro?
+                        </Link>
+                        <Link component={RouterLink} to="/proyectos" color="inherit" display="block" sx={{ mb: 1, fontSize: '0.9rem', '&:hover': { color: '#F59E0B' }, transition: 'color 0.2s' }}>
+                            Proyectos
+                        </Link>
                     </Grid>
 
-                    {/* --- Columna 3: Conecta / Redes Sociales --- */}
-                    <Grid xs={12} sm={6} md={3}>
-                        <Typography variant="h6" gutterBottom sx={footerTitleStyle}>
+                    <Grid item xs={12} sm={6} md={3}>
+                        <Typography variant="h6" sx={{ color: '#ffffff', fontWeight: 700, mb: 2, fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                             Conecta
                         </Typography>
                         <Stack direction="row" spacing={1.5} sx={{ mb: 2 }}>
@@ -113,38 +68,64 @@ const Footer = () => {
                                     href={social.href}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    aria-label={social['aria-label']}
+                                    aria-label={social.label}
                                     sx={{
-                                        color: 'rgba(255, 255, 255, 0.7)',
-                                        '&:hover': { color: 'white', bgcolor: 'rgba(255,255,255,0.1)' }
+                                        color: 'rgba(255, 255, 255, 0.6)',
+                                        bgcolor: 'rgba(255, 255, 255, 0.05)',
+                                        '&:hover': {
+                                            color: '#ffffff',
+                                            bgcolor: 'rgba(245, 158, 11, 0.2)',
+                                        },
+                                        transition: 'all 0.2s',
                                     }}
                                 >
                                     {social.icon}
                                 </IconButton>
                             ))}
                         </Stack>
-                        <Link href="#" color="inherit" display="block" sx={footerLinkStyle}>Oficinas Centrales</Link> {/* Enlace futuro */}
-                        <Link href="#" color="inherit" display="block" sx={footerLinkStyle}>Directorio</Link> {/* Enlace futuro */}
-                        <Link component={RouterLink} to="/contacto" color="inherit" display="block" sx={footerLinkStyle}>Contacto</Link>  
+                        <Link component={RouterLink} to="/contacto" color="inherit" display="block" sx={{ mb: 1, fontSize: '0.9rem', '&:hover': { color: '#F59E0B' }, transition: 'color 0.2s' }}>
+                            Contacto
+                        </Link>
+                        <Link component={RouterLink} to="/tribunales" color="inherit" display="block" sx={{ mb: 1, fontSize: '0.9rem', '&:hover': { color: '#F59E0B' }, transition: 'color 0.2s' }}>
+                            Tribunales
+                        </Link>
                     </Grid>
 
-                     
-
+                    <Grid item xs={12} sm={6} md={3}>
+                        <Typography variant="h6" sx={{ color: '#ffffff', fontWeight: 700, mb: 2, fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            Legal
+                        </Typography>
+                        <Link component={RouterLink} to="/politica-privacidad" color="inherit" display="block" sx={{ mb: 1, fontSize: '0.9rem', '&:hover': { color: '#F59E0B' }, transition: 'color 0.2s' }}>
+                            Política de Privacidad
+                        </Link>
+                        <Link component={RouterLink} to="/terminos-servicio" color="inherit" display="block" sx={{ mb: 1, fontSize: '0.9rem', '&:hover': { color: '#F59E0B' }, transition: 'color 0.2s' }}>
+                            Términos de Servicio
+                        </Link>
+                        <Link component={RouterLink} to="/institucion/estatuto" color="inherit" display="block" sx={{ mb: 1, fontSize: '0.9rem', '&:hover': { color: '#F59E0B' }, transition: 'color 0.2s' }}>
+                            Estatuto Orgánico
+                        </Link>
+                    </Grid>
                 </Grid>
+
                 <Divider sx={{ my: 4, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
-                {/* --- Copyright --- */}
-                <Typography variant="body2" align="center" sx={{ mt: 5, pt: 2, borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                    {'Copyright © '}
-                    <Link color="inherit" href="#">CONALJUVE Bolivia</Link>{' '}
-                    <Copyright/>
-                    {new Date().getFullYear()}
-                    {'. Todos los derechos reservados.'}
-                </Typography>
+
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.85rem', opacity: 0.7 }}>
+                        {'Copyright © '}
+                        <Link color="inherit" component={RouterLink} to="/" sx={{ fontWeight: 600 }}>
+                            CONALJUVE Bolivia
+                        </Link>
+                        {' '}
+                        {new Date().getFullYear()}
+                        {'. Todos los derechos reservados.'}
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontSize: '0.8rem', opacity: 0.5 }}>
+                        Plataforma Digital de las Juntas Vecinales de Bolivia
+                    </Typography>
+                </Box>
             </Container>
         </Box>
     );
 };
-
-
 
 export default Footer;
